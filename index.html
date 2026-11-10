@@ -1,0 +1,1597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CANDY BLAST - Match 3 Puzzle Game</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+        }
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 45%, #a1c4fd 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            margin: 0;
+            padding: 0;
+        }
+        .font-fredoka {
+            font-family: 'Fredoka One', cursive;
+        }
+        .game-card-shadow {
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2), 0 5px 15px rgba(255,255,255,0.4) inset;
+        }
+        .candy-btn {
+            background: linear-gradient(180deg, #ff6b8b 0%, #d1365c 100%);
+            box-shadow: 0 6px 0 #9e1f3d, 0 10px 15px rgba(0,0,0,0.3);
+            transition: all 0.1s ease;
+        }
+        .candy-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #9e1f3d, 0 5px 10px rgba(0,0,0,0.3);
+        }
+        .candy-btn-blue {
+            background: linear-gradient(180deg, #4facfe 0%, #00f2fe 100%);
+            box-shadow: 0 6px 0 #008ba3, 0 10px 15px rgba(0,0,0,0.3);
+        }
+        .candy-btn-blue:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #008ba3, 0 5px 10px rgba(0,0,0,0.3);
+        }
+        .candy-btn-green {
+            background: linear-gradient(180deg, #43e97b 0%, #38f9d7 100%);
+            box-shadow: 0 6px 0 #1f9e58, 0 10px 15px rgba(0,0,0,0.3);
+        }
+        .candy-btn-green:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #1f9e58, 0 5px 10px rgba(0,0,0,0.3);
+        }
+        .candy-btn-yellow {
+            background: linear-gradient(180deg, #ffdb53 0%, #fda085 100%);
+            box-shadow: 0 6px 0 #c26919, 0 10px 15px rgba(0,0,0,0.3);
+        }
+        .candy-btn-yellow:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #c26919, 0 5px 10px rgba(0,0,0,0.3);
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(10px);
+            border: 4px solid rgba(255, 255, 255, 0.9);
+        }
+        /* Custom Floating Background Animation */
+        @keyframes float {
+            0% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(10deg); }
+            100% { transform: translateY(0px) rotate(0deg); }
+        }
+        .floating-candy {
+            animation: float 4s ease-in-out infinite;
+        }
+        .floating-candy-delayed {
+            animation: float 5s ease-in-out 1.5s infinite;
+        }
+        /* Custom scrollbar for level map */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-center min-h-screen p-2 sm:p-4 select-none">
+
+    <!-- GAME CONTAINER -->
+    <div id="game-app" class="relative w-full max-w-md h-[92vh] max-h-[850px] bg-gradient-to-b from-pink-300 via-purple-300 to-indigo-400 rounded-3xl border-8 border-white shadow-2xl overflow-hidden flex flex-col justify-between">
+
+        <!-- BACKGROUND FLOATING DECORATIONS (HOME & MENU) -->
+        <div id="bg-decorations" class="absolute inset-0 pointer-events-none overflow-hidden">
+            <div class="floating-candy absolute top-10 left-6 text-4xl opacity-40">🍬</div>
+            <div class="floating-candy-delayed absolute top-32 right-8 text-5xl opacity-40">🍭</div>
+            <div class="floating-candy absolute bottom-20 left-10 text-5xl opacity-40">🍩</div>
+            <div class="floating-candy-delayed absolute bottom-36 right-6 text-4xl opacity-40">🧁</div>
+            <div class="floating-candy absolute top-1/2 left-4 text-3xl opacity-30">⭐️</div>
+        </div>
+
+        <!-- SCREEN 1: HOME SCREEN -->
+        <div id="screen-home" class="relative z-10 flex flex-col items-center justify-between h-full p-6 text-center">
+            <!-- Top Bar Info -->
+            <div class="w-full flex justify-between items-center mt-2">
+                <div class="flex items-center gap-2 bg-white/70 px-4 py-2 rounded-full border-2 border-white shadow">
+                    <i class="fa-solid fa-crown text-yellow-500 text-lg"></i>
+                    <span class="font-fredoka text-pink-600 text-sm sm:text-base">BEST: <span id="home-best-score">0</span></span>
+                </div>
+                <button id="btn-sound-toggle-home" class="w-10 h-10 bg-white/80 rounded-full border-2 border-white text-pink-500 flex items-center justify-center shadow-md active:scale-95 transition">
+                    <i class="fa-solid fa-volume-high text-lg"></i>
+                </button>
+            </div>
+
+            <!-- Title & Mascot -->
+            <div class="my-auto flex flex-col items-center">
+                <div class="relative">
+                    <h1 class="font-fredoka text-5xl sm:text-6xl text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-yellow-400 to-pink-500 drop-shadow-[0_5px_5px_rgba(0,0,0,0.3)] tracking-wider">
+                        CANDY
+                    </h1>
+                    <h1 class="font-fredoka text-4xl sm:text-5xl text-transparent bg-clip-text bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 drop-shadow-[0_4px_4px_rgba(0,0,0,0.3)] tracking-widest -mt-2">
+                        BLAST
+                    </h1>
+                </div>
+                <div class="w-32 h-32 mt-4 relative flex items-center justify-center">
+                    <div class="absolute inset-0 bg-yellow-300 rounded-full blur-xl opacity-60 animate-pulse"></div>
+                    <span class="text-7xl relative z-10 floating-candy">👑🍬</span>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="w-full space-y-4 mb-4">
+                <button id="btn-play-main" class="candy-btn w-full py-4 rounded-2xl font-fredoka text-2xl text-white tracking-wide border-2 border-white/50 flex items-center justify-center gap-3">
+                    <i class="fa-solid fa-play"></i> PLAY GAME
+                </button>
+                <div class="grid grid-cols-2 gap-3">
+                    <button id="btn-level-select" class="candy-btn-blue py-3 rounded-2xl font-fredoka text-lg text-white border-2 border-white/50 flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-map"></i> LEVELS
+                    </button>
+                    <button id="btn-open-settings" class="candy-btn-yellow py-3 rounded-2xl font-fredoka text-lg text-white border-2 border-white/50 flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-gear"></i> SETTINGS
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCREEN 2: LEVEL SELECT MAP -->
+        <div id="screen-level-select" class="hidden relative z-10 flex flex-col h-full p-4 text-center">
+            <!-- Header -->
+            <div class="flex items-center justify-between mb-4 bg-white/80 p-3 rounded-2xl border-2 border-white shadow">
+                <button id="btn-back-home-map" class="w-10 h-10 bg-pink-500 text-white rounded-full flex items-center justify-center shadow active:scale-95">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </button>
+                <h2 class="font-fredoka text-2xl text-pink-600">SELECT LEVEL</h2>
+                <div class="w-10"></div>
+            </div>
+
+            <!-- Scrollable Level Grid -->
+            <div class="flex-1 overflow-y-auto no-scrollbar pr-1">
+                <div id="levels-grid" class="grid grid-cols-4 gap-3 py-2">
+                    <!-- Populated dynamically via JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- SCREEN 3: MAIN GAMEPLAY -->
+        <div id="screen-game" class="hidden relative z-10 flex flex-col justify-between h-full p-3">
+            <!-- Game Top Header Bar -->
+            <div class="glass-panel rounded-2xl p-3 flex justify-between items-center shadow-lg">
+                <button id="btn-pause-game" class="w-10 h-10 bg-yellow-400 text-white rounded-xl font-bold flex items-center justify-center border-2 border-white shadow active:scale-95">
+                    <i class="fa-solid fa-pause text-xl"></i>
+                </button>
+
+                <!-- Moves Left Display -->
+                <div class="flex flex-col items-center">
+                    <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">MOVES</span>
+                    <span id="game-moves" class="font-fredoka text-3xl text-pink-600 leading-none">25</span>
+                </div>
+
+                <!-- Level & Target Info -->
+                <div class="flex flex-col items-center">
+                    <span id="game-level-title" class="font-fredoka text-sm text-purple-700">LEVEL 1</span>
+                    <div class="text-xs font-bold text-gray-600">GOAL: <span id="game-target" class="text-indigo-600">500</span></div>
+                </div>
+
+                <!-- Current Score -->
+                <div class="flex flex-col items-end">
+                    <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">SCORE</span>
+                    <span id="game-score" class="font-fredoka text-2xl text-yellow-500 leading-none">0</span>
+                </div>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="w-full bg-white/60 h-4 rounded-full p-0.5 border border-white shadow-inner my-2 relative overflow-hidden">
+                <div id="game-progress-bar" class="bg-gradient-to-r from-yellow-400 to-green-400 h-full rounded-full transition-all duration-300 w-0"></div>
+            </div>
+
+            <!-- Canvas Container -->
+            <div class="relative flex-1 flex items-center justify-center my-auto">
+                <div class="relative p-2 bg-white/40 backdrop-blur-md rounded-3xl border-4 border-white/80 shadow-2xl">
+                    <canvas id="game-canvas" class="rounded-2xl cursor-pointer touch-none"></canvas>
+                    
+                    <!-- Overlay Notification Text (Combos, Shuffles) -->
+                    <div id="canvas-overlay-text" class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-0 transition-opacity duration-300">
+                        <span class="font-fredoka text-4xl text-yellow-300 drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)] text-center px-4" id="overlay-msg-content">SHUFFLING!</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Control Controls -->
+            <div class="flex justify-between items-center px-2 py-1">
+                <button id="btn-restart-current" class="w-10 h-10 bg-white/80 rounded-full border-2 border-white text-purple-600 flex items-center justify-center shadow active:scale-95">
+                    <i class="fa-solid fa-rotate-right"></i>
+                </button>
+                <div class="text-xs font-bold text-white/90 drop-shadow">Match 3 candies in a row!</div>
+                <button id="btn-audio-in-game" class="w-10 h-10 bg-white/80 rounded-full border-2 border-white text-pink-500 flex items-center justify-center shadow active:scale-95">
+                    <i class="fa-solid fa-volume-high"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- MODAL 1: SETTINGS -->
+        <div id="modal-settings" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+            <div class="glass-panel w-full max-w-sm rounded-3xl p-6 flex flex-col gap-5 border-4 border-white shadow-2xl animate-fade-in">
+                <h3 class="font-fredoka text-3xl text-center text-pink-600">SETTINGS</h3>
+                
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center bg-white/70 p-3 rounded-2xl">
+                        <span class="font-bold text-gray-700">Sound Effects</span>
+                        <button id="toggle-sfx" class="w-14 h-8 bg-green-500 rounded-full p-1 transition flex items-center">
+                            <div class="w-6 h-6 bg-white rounded-full shadow-md transform translate-x-6 transition"></div>
+                        </button>
+                    </div>
+
+                    <div class="flex justify-between items-center bg-white/70 p-3 rounded-2xl">
+                        <span class="font-bold text-gray-700">Background Music</span>
+                        <button id="toggle-bgm" class="w-14 h-8 bg-green-500 rounded-full p-1 transition flex items-center">
+                            <div class="w-6 h-6 bg-white rounded-full shadow-md transform translate-x-6 transition"></div>
+                        </button>
+                    </div>
+
+                    <div class="flex flex-col gap-1 bg-white/70 p-3 rounded-2xl">
+                        <div class="flex justify-between text-sm font-bold text-gray-700">
+                            <span>Volume</span>
+                            <span id="volume-label">80%</span>
+                        </div>
+                        <input id="slider-volume" type="range" min="0" max="100" value="80" class="w-full accent-pink-500 cursor-pointer">
+                    </div>
+                </div>
+
+                <button id="btn-reset-data" class="bg-red-100 border border-red-300 text-red-600 py-2 rounded-xl font-bold text-sm hover:bg-red-200 transition">
+                    <i class="fa-solid fa-trash"></i> Reset All Progress
+                </button>
+
+                <button id="btn-close-settings" class="candy-btn py-3 rounded-2xl font-fredoka text-white text-xl border-2 border-white/50">
+                    CLOSE
+                </button>
+            </div>
+        </div>
+
+        <!-- MODAL 2: PAUSE MENU -->
+        <div id="modal-pause" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+            <div class="glass-panel w-full max-w-sm rounded-3xl p-6 flex flex-col gap-4 text-center border-4 border-white shadow-2xl">
+                <h3 class="font-fredoka text-4xl text-purple-600">PAUSED</h3>
+                
+                <div class="space-y-3 my-2">
+                    <button id="btn-resume-game" class="candy-btn-green w-full py-3 rounded-2xl font-fredoka text-white text-xl">
+                        RESUME
+                    </button>
+                    <button id="btn-restart-pause" class="candy-btn-yellow w-full py-3 rounded-2xl font-fredoka text-white text-xl">
+                        RESTART LEVEL
+                    </button>
+                    <button id="btn-exit-map" class="candy-btn-blue w-full py-3 rounded-2xl font-fredoka text-white text-xl">
+                        MAIN MENU
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL 3: WIN SCREEN -->
+        <div id="modal-win" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-md flex items-center justify-center p-4">
+            <div class="glass-panel w-full max-w-sm rounded-3xl p-6 flex flex-col items-center gap-3 text-center border-4 border-white shadow-2xl relative">
+                <!-- Stars Container -->
+                <div class="flex justify-center gap-2 -mt-12">
+                    <div id="star-1" class="text-5xl text-gray-300 transform -rotate-12 transition duration-500">★</div>
+                    <div id="star-2" class="text-6xl text-gray-300 transform -translate-y-2 transition duration-500">★</div>
+                    <div id="star-3" class="text-5xl text-gray-300 transform rotate-12 transition duration-500">★</div>
+                </div>
+
+                <h3 class="font-fredoka text-4xl text-yellow-500 drop-shadow">LEVEL PASSED!</h3>
+
+                <div class="w-full bg-white/80 rounded-2xl p-4 space-y-2 text-gray-700 my-2">
+                    <div class="flex justify-between font-bold">
+                        <span>Score:</span>
+                        <span id="win-score-val" class="text-pink-600 font-fredoka text-lg">0</span>
+                    </div>
+                    <div class="flex justify-between font-bold">
+                        <span>Moves Bonus:</span>
+                        <span id="win-bonus-val" class="text-green-600 font-fredoka text-lg">+0</span>
+                    </div>
+                    <hr class="border-gray-300">
+                    <div class="flex justify-between font-extrabold text-lg">
+                        <span>Total Score:</span>
+                        <span id="win-total-val" class="text-purple-600 font-fredoka text-xl">0</span>
+                    </div>
+                </div>
+
+                <div class="w-full space-y-3">
+                    <button id="btn-next-level" class="candy-btn-green w-full py-3 rounded-2xl font-fredoka text-white text-xl border-2 border-white/50">
+                        NEXT LEVEL
+                    </button>
+                    <div class="grid grid-cols-2 gap-3">
+                        <button id="btn-win-replay" class="candy-btn-yellow py-3 rounded-2xl font-fredoka text-white text-lg border-2 border-white/50">
+                            REPLAY
+                        </button>
+                        <button id="btn-win-home" class="candy-btn-blue py-3 rounded-2xl font-fredoka text-white text-lg border-2 border-white/50">
+                            HOME
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL 4: LOSE SCREEN -->
+        <div id="modal-lose" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-md flex items-center justify-center p-4">
+            <div class="glass-panel w-full max-w-sm rounded-3xl p-6 flex flex-col items-center gap-4 text-center border-4 border-white shadow-2xl">
+                <div class="text-6xl my-2">😭</div>
+                <h3 class="font-fredoka text-4xl text-red-500 drop-shadow">OUT OF MOVES!</h3>
+                <p class="text-gray-600 font-bold -mt-2">You didn't reach the target score in time.</p>
+
+                <div class="w-full bg-white/80 rounded-2xl p-4 space-y-2 text-gray-700">
+                    <div class="flex justify-between font-bold">
+                        <span>Target:</span>
+                        <span id="lose-target-val" class="text-indigo-600 font-fredoka">0</span>
+                    </div>
+                    <div class="flex justify-between font-bold">
+                        <span>Your Score:</span>
+                        <span id="lose-score-val" class="text-pink-600 font-fredoka">0</span>
+                    </div>
+                </div>
+
+                <div class="w-full space-y-3">
+                    <button id="btn-lose-retry" class="candy-btn-green w-full py-3 rounded-2xl font-fredoka text-white text-xl border-2 border-white/50">
+                        TRY AGAIN
+                    </button>
+                    <button id="btn-lose-home" class="candy-btn-blue w-full py-3 rounded-2xl font-fredoka text-white text-lg border-2 border-white/50">
+                        MAIN MENU
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- JAVASCRIPT GAME LOGIC -->
+    <script>
+        /* ==========================================================================
+           1. AUDIO SYNTHESIZER (WEB AUDIO API - ZERO EXTERNAL MP3 DEPENDENCIES)
+           ========================================================================== */
+        class SoundEngine {
+            constructor() {
+                this.ctx = null;
+                this.sfxEnabled = true;
+                this.bgmEnabled = true;
+                this.volume = 0.8;
+                this.bgmInterval = null;
+            }
+
+            init() {
+                if (!this.ctx) {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    this.ctx = new AudioContext();
+                }
+                if (this.ctx && this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
+            }
+
+            playTone(freq, type, duration, startVol = 1, endVol = 0.001) {
+                if (!this.sfxEnabled || !this.ctx) return;
+                try {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = type;
+                    osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+                    gain.gain.setValueAtTime(startVol * this.volume, this.ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(endVol, this.ctx.currentTime + duration);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start();
+                    osc.stop(this.ctx.currentTime + duration);
+                } catch(e) {}
+            }
+
+            playSwap() {
+                this.init();
+                this.playTone(400, 'sine', 0.08, 0.5);
+                setTimeout(() => this.playTone(600, 'sine', 0.08, 0.5), 50);
+            }
+
+            playMatch() {
+                this.init();
+                const notes = [523.25, 659.25, 783.99]; // C5, E5, G5
+                notes.forEach((freq, i) => {
+                    setTimeout(() => this.playTone(freq, 'triangle', 0.15, 0.6), i * 60);
+                });
+            }
+
+            playSpecial() {
+                this.init();
+                this.playTone(300, 'sawtooth', 0.3, 0.7);
+                setTimeout(() => this.playTone(600, 'sawtooth', 0.3, 0.7), 80);
+                setTimeout(() => this.playTone(900, 'sine', 0.4, 0.8), 160);
+            }
+
+            playExplode() {
+                this.init();
+                if (!this.sfxEnabled || !this.ctx) return;
+                try {
+                    // Noise synth for boom
+                    const bufferSize = this.ctx.sampleRate * 0.3;
+                    const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+                    const output = buffer.getChannelData(0);
+                    for (let i = 0; i < bufferSize; i++) {
+                        output[i] = Math.random() * 2 - 1;
+                    }
+                    const whiteNoise = this.ctx.createBufferSource();
+                    whiteNoise.buffer = buffer;
+                    const filter = this.ctx.createBiquadFilter();
+                    filter.type = 'lowpass';
+                    filter.frequency.setValueAtTime(800, this.ctx.currentTime);
+                    filter.frequency.exponentialRampToValueAtTime(50, this.ctx.currentTime + 0.3);
+                    const gain = this.ctx.createGain();
+                    gain.gain.setValueAtTime(this.volume, this.ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.3);
+                    whiteNoise.connect(filter);
+                    filter.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    whiteNoise.start();
+                } catch(e) {}
+            }
+
+            playWin() {
+                this.init();
+                const arpeggio = [523.25, 659.25, 783.99, 1046.50];
+                arpeggio.forEach((freq, i) => {
+                    setTimeout(() => this.playTone(freq, 'sine', 0.25, 0.7), i * 120);
+                });
+            }
+
+            playLose() {
+                this.init();
+                const notes = [400, 350, 300, 250];
+                notes.forEach((freq, i) => {
+                    setTimeout(() => this.playTone(freq, 'sawtooth', 0.2, 0.5), i * 150);
+                });
+            }
+
+            playClick() {
+                this.init();
+                this.playTone(800, 'sine', 0.04, 0.3);
+            }
+
+            startBGM() {
+                if (this.bgmInterval || !this.bgmEnabled) return;
+                let step = 0;
+                const melody = [261.63, 329.63, 392.00, 329.63, 293.66, 349.23, 440.00, 349.23];
+                this.bgmInterval = setInterval(() => {
+                    if (this.bgmEnabled && this.ctx) {
+                        this.playTone(melody[step % melody.length], 'sine', 0.2, 0.15, 0.01);
+                        step++;
+                    }
+                }, 400);
+            }
+
+            stopBGM() {
+                if (this.bgmInterval) {
+                    clearInterval(this.bgmInterval);
+                    this.bgmInterval = null;
+                }
+            }
+        }
+
+        const sound = new SoundEngine();
+
+        /* ==========================================================================
+           2. LEVEL DEFINITIONS & GAME DATA
+           ========================================================================== */
+        const TOTAL_LEVELS = 20;
+        const LEVEL_CONFIGS = Array.from({ length: TOTAL_LEVELS }, (_, i) => {
+            const levelNum = i + 1;
+            return {
+                level: levelNum,
+                targetScore: 400 + i * 350 + Math.floor(i * i * 30),
+                moves: Math.max(15, 28 - Math.floor(i * 0.6)),
+                candiesCount: i < 5 ? 5 : 6 // 5 candy types for early levels, 6 later
+            };
+        });
+
+        // Candy Colors & Render Types
+        // Types: 0: Red Jelly, 1: Blue Diamond, 2: Green Sugar, 3: Yellow Star, 4: Purple Lollipop, 5: Orange Orb
+        const CANDY_TYPES = [
+            { name: 'Red Jelly', color: '#ff3b5c', highlight: '#ff9ebb' },
+            { name: 'Blue Diamond', color: '#00d2ff', highlight: '#99f0ff' },
+            { name: 'Green Sugar', color: '#2ecc71', highlight: '#a3e9be' },
+            { name: 'Yellow Star', color: '#f1c40f', highlight: '#fef1b7' },
+            { name: 'Purple Lollipop', color: '#9b59b6', highlight: '#e8c5f5' },
+            { name: 'Orange Orb', color: '#e67e22', highlight: '#f8c49c' }
+        ];
+
+        /* ==========================================================================
+           3. GAME ENGINE & STATE MANAGEMENT
+           ========================================================================== */
+        class CandyBlastGame {
+            constructor() {
+                this.gridSize = 8;
+                this.board = [];
+                this.currentLevel = 1;
+                this.score = 0;
+                this.movesLeft = 0;
+                this.targetScore = 0;
+                this.isAnimating = false;
+                this.selectedTile = null;
+
+                // Canvas DOM
+                this.canvas = document.getElementById('game-canvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.tileSize = 0;
+
+                // Touch & Drag state
+                this.dragStartTile = null;
+                this.touchStartX = 0;
+                this.touchStartY = 0;
+
+                // Animations & Visual effects queues
+                this.particles = [];
+                this.floatingTexts = [];
+                this.animatingTiles = []; // Smooth falls / swaps
+
+                // Player Progress (LocalStorage)
+                this.progress = this.loadProgress();
+
+                this.initUI();
+                this.setupCanvas();
+                this.renderLevelMap();
+                this.showScreen('screen-home');
+            }
+
+            loadProgress() {
+                const saved = localStorage.getItem('candy_blast_progress');
+                if (saved) {
+                    try { return JSON.parse(saved); } catch(e){}
+                }
+                return { unlockedLevel: 1, stars: {}, bestScore: 0 };
+            }
+
+            saveProgress() {
+                localStorage.setItem('candy_blast_progress', JSON.stringify(this.progress));
+            }
+
+            /* ----------------------------------------------------------------------
+               UI & Event Listeners setup
+               ---------------------------------------------------------------------- */
+            initUI() {
+                // Home Buttons
+                document.getElementById('btn-play-main').onclick = () => {
+                    sound.playClick();
+                    this.startLevel(this.progress.unlockedLevel);
+                };
+                document.getElementById('btn-level-select').onclick = () => {
+                    sound.playClick();
+                    this.showScreen('screen-level-select');
+                };
+                document.getElementById('btn-open-settings').onclick = () => {
+                    sound.playClick();
+                    document.getElementById('modal-settings').classList.remove('hidden');
+                };
+                document.getElementById('btn-close-settings').onclick = () => {
+                    sound.playClick();
+                    document.getElementById('modal-settings').classList.add('hidden');
+                };
+                document.getElementById('btn-back-home-map').onclick = () => {
+                    sound.playClick();
+                    this.showScreen('screen-home');
+                };
+
+                // Sound Toggles
+                const updateSoundIcon = (btnId) => {
+                    const icon = document.querySelector(`#${btnId} i`);
+                    if (icon) {
+                        icon.className = sound.sfxEnabled ? 'fa-solid fa-volume-high' : 'fa-solid fa-volume-xmark';
+                    }
+                };
+                const toggleAudioAll = () => {
+                    sound.sfxEnabled = !sound.sfxEnabled;
+                    sound.bgmEnabled = sound.sfxEnabled;
+                    if (sound.bgmEnabled) sound.startBGM(); else sound.stopBGM();
+                    updateSoundIcon('btn-sound-toggle-home');
+                    updateSoundIcon('btn-audio-in-game');
+                };
+                document.getElementById('btn-sound-toggle-home').onclick = () => { sound.playClick(); toggleAudioAll(); };
+                document.getElementById('btn-audio-in-game').onclick = () => { sound.playClick(); toggleAudioAll(); };
+
+                // Settings Controls
+                const sfxToggle = document.getElementById('toggle-sfx');
+                const bgmToggle = document.getElementById('toggle-bgm');
+                const volumeSlider = document.getElementById('slider-volume');
+
+                sfxToggle.onclick = () => {
+                    sound.sfxEnabled = !sound.sfxEnabled;
+                    sfxToggle.className = `w-14 h-8 rounded-full p-1 transition flex items-center ${sound.sfxEnabled ? 'bg-green-500' : 'bg-gray-400'}`;
+                    sfxToggle.children[0].className = `w-6 h-6 bg-white rounded-full shadow-md transform transition ${sound.sfxEnabled ? 'translate-x-6' : 'translate-x-0'}`;
+                    updateSoundIcon('btn-sound-toggle-home');
+                    updateSoundIcon('btn-audio-in-game');
+                };
+                bgmToggle.onclick = () => {
+                    sound.bgmEnabled = !sound.bgmEnabled;
+                    bgmToggle.className = `w-14 h-8 rounded-full p-1 transition flex items-center ${sound.bgmEnabled ? 'bg-green-500' : 'bg-gray-400'}`;
+                    bgmToggle.children[0].className = `w-6 h-6 bg-white rounded-full shadow-md transform transition ${sound.bgmEnabled ? 'translate-x-6' : 'translate-x-0'}`;
+                    if (sound.bgmEnabled) sound.startBGM(); else sound.stopBGM();
+                };
+                volumeSlider.oninput = (e) => {
+                    sound.volume = e.target.value / 100;
+                    document.getElementById('volume-label').innerText = `${e.target.value}%`;
+                };
+                document.getElementById('btn-reset-data').onclick = () => {
+                    if (confirm("Reset all unlocked levels and high scores?")) {
+                        localStorage.removeItem('candy_blast_progress');
+                        this.progress = { unlockedLevel: 1, stars: {}, bestScore: 0 };
+                        this.renderLevelMap();
+                        this.updateHomeBestScore();
+                        document.getElementById('modal-settings').classList.add('hidden');
+                    }
+                };
+
+                // In-Game Buttons
+                document.getElementById('btn-pause-game').onclick = () => {
+                    sound.playClick();
+                    document.getElementById('modal-pause').classList.remove('hidden');
+                };
+                document.getElementById('btn-resume-game').onclick = () => {
+                    sound.playClick();
+                    document.getElementById('modal-pause').classList.add('hidden');
+                };
+                document.getElementById('btn-restart-current').onclick = () => {
+                    sound.playClick();
+                    this.startLevel(this.currentLevel);
+                };
+                document.getElementById('btn-restart-pause').onclick = () => {
+                    sound.playClick();
+                    document.getElementById('modal-pause').classList.add('hidden');
+                    this.startLevel(this.currentLevel);
+                };
+                document.getElementById('btn-exit-map').onclick = () => {
+                    sound.playClick();
+                    document.getElementById('modal-pause').classList.add('hidden');
+                    this.showScreen('screen-level-select');
+                };
+
+                // Win Modal Actions
+                document.getElementById('btn-next-level').onclick = () => {
+                    sound.playClick();
+                    document.getElementById('modal-win').classList.add('hidden');
+                    this.startLevel(Math.min(TOTAL_LEVELS, this.currentLevel + 1));
+                };
+                document.getElementById('btn-win-replay').onclick = () => {
+                    sound.playClick();
+                    document.getElementById('modal-win').classList.add('hidden');
+                    this.startLevel(this.currentLevel);
+                };
+                document.getElementById('btn-win-home').onclick = () => {
+                    sound.playClick();
+                    document.getElementById('modal-win').classList.add('hidden');
+                    this.showScreen('screen-home');
+                };
+
+                // Lose Modal Actions
+                document.getElementById('btn-lose-retry').onclick = () => {
+                    sound.playClick();
+                    document.getElementById('modal-lose').classList.add('hidden');
+                    this.startLevel(this.currentLevel);
+                };
+                document.getElementById('btn-lose-home').onclick = () => {
+                    sound.playClick();
+                    document.getElementById('modal-lose').classList.add('hidden');
+                    this.showScreen('screen-home');
+                };
+
+                // Window Resize handling
+                window.addEventListener('resize', () => this.setupCanvas());
+
+                this.updateHomeBestScore();
+            }
+
+            updateHomeBestScore() {
+                document.getElementById('home-best-score').innerText = this.progress.bestScore || 0;
+            }
+
+            showScreen(screenId) {
+                ['screen-home', 'screen-level-select', 'screen-game'].forEach(id => {
+                    document.getElementById(id).classList.add('hidden');
+                });
+                document.getElementById(screenId).classList.remove('hidden');
+
+                if (screenId === 'screen-game') {
+                    this.setupCanvas();
+                    sound.startBGM();
+                } else if (screenId === 'screen-level-select') {
+                    this.renderLevelMap();
+                }
+            }
+
+            renderLevelMap() {
+                const grid = document.getElementById('levels-grid');
+                grid.innerHTML = '';
+                for (let i = 1; i <= TOTAL_LEVELS; i++) {
+                    const isUnlocked = i <= this.progress.unlockedLevel;
+                    const stars = this.progress.stars[i] || 0;
+                    
+                    const btn = document.createElement('button');
+                    btn.className = `aspect-square rounded-2xl flex flex-col items-center justify-center p-2 font-fredoka shadow-md transition-all border-2 border-white/60 ${
+                        isUnlocked ? 'bg-gradient-to-b from-yellow-300 to-pink-400 text-white active:scale-95 cursor-pointer' : 'bg-gray-300 text-gray-500 cursor-not-allowed opacity-80'
+                    }`;
+
+                    if (isUnlocked) {
+                        btn.onclick = () => {
+                            sound.playClick();
+                            this.startLevel(i);
+                        };
+                        btn.innerHTML = `
+                            <span class="text-xl drop-shadow">${i}</span>
+                            <div class="text-xs tracking-tighter text-yellow-200">
+                                ${'★'.repeat(stars)}${'☆'.repeat(3 - stars)}
+                            </div>
+                        `;
+                    } else {
+                        btn.innerHTML = `<i class="fa-solid fa-lock text-xl"></i>`;
+                    }
+                    grid.appendChild(btn);
+                }
+            }
+
+            /* ----------------------------------------------------------------------
+               4. CANVAS SETUP & TOUCH INTERACTION
+               ---------------------------------------------------------------------- */
+            setupCanvas() {
+                const container = this.canvas.parentElement;
+                const size = Math.min(container.clientWidth - 16, container.clientHeight - 16, 420);
+                this.canvas.width = size;
+                this.canvas.height = size;
+                this.tileSize = size / this.gridSize;
+
+                // Event Listeners for Interaction
+                this.canvas.onmousedown = (e) => this.handlePointerDown(e);
+                this.canvas.onmousemove = (e) => this.handlePointerMove(e);
+                this.canvas.onmouseup = () => this.handlePointerUp();
+
+                this.canvas.ontouchstart = (e) => {
+                    if (e.touches.length === 1) {
+                        const touch = e.touches[0];
+                        this.handlePointerDown(touch);
+                    }
+                };
+                this.canvas.ontouchmove = (e) => {
+                    if (e.touches.length === 1) {
+                        const touch = e.touches[0];
+                        this.handlePointerMove(touch);
+                    }
+                };
+                this.canvas.ontouchend = () => this.handlePointerUp();
+            }
+
+            getCanvasCoords(e) {
+                const rect = this.canvas.getBoundingClientRect();
+                return {
+                    x: e.clientX - rect.left,
+                    y: e.clientY - rect.top
+                };
+            }
+
+            getTileCoords(x, y) {
+                const col = Math.floor(x / this.tileSize);
+                const row = Math.floor(y / this.tileSize);
+                if (row >= 0 && row < this.gridSize && col >= 0 && col < this.gridSize) {
+                    return { r: row, c: col };
+                }
+                return null;
+            }
+
+            handlePointerDown(e) {
+                if (this.isAnimating || this.movesLeft <= 0) return;
+                const coords = this.getCanvasCoords(e);
+                const tile = this.getTileCoords(coords.x, coords.y);
+                if (!tile) return;
+
+                this.touchStartX = coords.x;
+                this.touchStartY = coords.y;
+                this.dragStartTile = tile;
+
+                if (!this.selectedTile) {
+                    this.selectedTile = tile;
+                } else {
+                    // Check if clicked adjacent tile
+                    const dR = Math.abs(this.selectedTile.r - tile.r);
+                    const dC = Math.abs(this.selectedTile.c - tile.c);
+                    if ((dR === 1 && dC === 0) || (dR === 0 && dC === 1)) {
+                        this.trySwap(this.selectedTile, tile);
+                        this.selectedTile = null;
+                    } else {
+                        this.selectedTile = tile;
+                    }
+                }
+                this.drawBoard();
+            }
+
+            handlePointerMove(e) {
+                if (!this.dragStartTile || this.isAnimating) return;
+                const coords = this.getCanvasCoords(e);
+                const dx = coords.x - this.touchStartX;
+                const dy = coords.y - this.touchStartY;
+
+                // Min drag threshold (20px)
+                if (Math.abs(dx) > 20 || Math.abs(dy) > 20) {
+                    let targetR = this.dragStartTile.r;
+                    let targetC = this.dragStartTile.c;
+
+                    if (Math.abs(dx) > Math.abs(dy)) {
+                        targetC += dx > 0 ? 1 : -1;
+                    } else {
+                        targetR += dy > 0 ? 1 : -1;
+                    }
+
+                    if (targetR >= 0 && targetR < this.gridSize && targetC >= 0 && targetC < this.gridSize) {
+                        this.trySwap(this.dragStartTile, { r: targetR, c: targetC });
+                    }
+                    this.dragStartTile = null;
+                    this.selectedTile = null;
+                }
+            }
+
+            handlePointerUp() {
+                this.dragStartTile = null;
+            }
+
+            /* ----------------------------------------------------------------------
+               5. LEVEL INITIALIZATION & MATCHING LOGIC
+               ---------------------------------------------------------------------- */
+            startLevel(levelNum) {
+                this.currentLevel = levelNum;
+                const config = LEVEL_CONFIGS[levelNum - 1];
+                this.targetScore = config.targetScore;
+                this.movesLeft = config.moves;
+                this.score = 0;
+                this.selectedTile = null;
+                this.isAnimating = false;
+
+                document.getElementById('game-level-title').innerText = `LEVEL ${levelNum}`;
+                document.getElementById('game-target').innerText = this.targetScore;
+                document.getElementById('game-moves').innerText = this.movesLeft;
+                document.getElementById('game-score').innerText = '0';
+                document.getElementById('game-progress-bar').style.width = '0%';
+
+                this.generateValidStartingBoard(config.candiesCount);
+                this.showScreen('screen-game');
+                this.startRenderLoop();
+            }
+
+            generateValidStartingBoard(maxCandies) {
+                let validBoard = false;
+                while (!validBoard) {
+                    this.board = [];
+                    for (let r = 0; r < this.gridSize; r++) {
+                        this.board[r] = [];
+                        for (let c = 0; c < this.gridSize; c++) {
+                            let type;
+                            do {
+                                type = Math.floor(Math.random() * maxCandies);
+                            } while (
+                                (c >= 2 && this.board[r][c-1].type === type && this.board[r][c-2].type === type) ||
+                                (r >= 2 && this.board[r-1][c].type === type && this.board[r-2][c].type === type)
+                            );
+                            
+                            this.board[r][c] = {
+                                type: type,
+                                special: null, // 'striped-h', 'striped-v', 'wrapped', 'colorbomb'
+                                r: r, c: c,
+                                offsetY: 0,
+                                alpha: 1
+                            };
+                        }
+                    }
+
+                    // Verify board has at least 1 valid starting move
+                    if (this.hasPossibleMoves()) {
+                        validBoard = true;
+                    }
+                }
+                this.drawBoard();
+            }
+
+            /* ----------------------------------------------------------------------
+               6. SWAPPING & MATCH DETECTION ENGINE
+               ---------------------------------------------------------------------- */
+            trySwap(t1, t2) {
+                if (this.isAnimating) return;
+                this.isAnimating = true;
+
+                sound.playSwap();
+
+                // Perform swap in board matrix
+                this.swapBoardTiles(t1, t2);
+
+                // Check for match or special combinations
+                const matches = this.findMatches();
+                const isSpecialCombo = this.isSpecialCombination(t1, t2);
+
+                if (matches.length > 0 || isSpecialCombo) {
+                    this.movesLeft--;
+                    document.getElementById('game-moves').innerText = this.movesLeft;
+
+                    if (isSpecialCombo) {
+                        this.handleSpecialCombo(t1, t2);
+                    } else {
+                        this.processMatches(matches);
+                    }
+                } else {
+                    // Invalid move - reverse swap with animation
+                    setTimeout(() => {
+                        this.swapBoardTiles(t1, t2);
+                        this.isAnimating = false;
+                        this.drawBoard();
+                    }, 250);
+                }
+            }
+
+            swapBoardTiles(t1, t2) {
+                const temp = this.board[t1.r][t1.c];
+                this.board[t1.r][t1.c] = this.board[t2.r][t2.c];
+                this.board[t2.r][t2.c] = temp;
+
+                this.board[t1.r][t1.c].r = t1.r;
+                this.board[t1.r][t1.c].c = t1.c;
+                this.board[t2.r][t2.c].r = t2.r;
+                this.board[t2.r][t2.c].c = t2.c;
+            }
+
+            isSpecialCombination(t1, t2) {
+                const b1 = this.board[t1.r][t1.c];
+                const b2 = this.board[t2.r][t2.c];
+                return (b1.special && b2.special);
+            }
+
+            handleSpecialCombo(t1, t2) {
+                const b1 = this.board[t1.r][t1.c];
+                const b2 = this.board[t2.r][t2.c];
+                const toClear = new Set();
+
+                // Color Bomb + Color Bomb = Clear Entire Board
+                if (b1.special === 'colorbomb' && b2.special === 'colorbomb') {
+                    for (let r = 0; r < 8; r++) {
+                        for (let c = 0; c < 8; c++) toClear.add(`${r},${c}`);
+                    }
+                }
+                // Striped + Striped = Cross Clear (Full Row & Column)
+                else if (b1.special.includes('striped') && b2.special.includes('striped')) {
+                    for (let i = 0; i < 8; i++) {
+                        toClear.add(`${t2.r},${i}`);
+                        toClear.add(`${i},${t2.c}`);
+                    }
+                }
+                // Color Bomb + Any standard/special candy
+                else if (b1.special === 'colorbomb' || b2.special === 'colorbomb') {
+                    const targetType = b1.special === 'colorbomb' ? b2.type : b1.type;
+                    for (let r = 0; r < 8; r++) {
+                        for (let c = 0; c < 8; c++) {
+                            if (this.board[r][c].type === targetType) toClear.add(`${r},${c}`);
+                        }
+                    }
+                    toClear.add(`${t1.r},${t1.c}`);
+                    toClear.add(`${t2.r},${t2.c}`);
+                }
+
+                sound.playSpecial();
+                this.clearTilesAndCascade(Array.from(toClear).map(s => {
+                    const [r, c] = s.split(',').map(Number);
+                    return { r, c };
+                }));
+            }
+
+            findMatches() {
+                const matchedSet = new Set();
+                const matchGroups = [];
+
+                // Horizontal Matches
+                for (let r = 0; r < this.gridSize; r++) {
+                    let matchLen = 1;
+                    for (let c = 0; c < this.gridSize; c++) {
+                        const checkNext = c < this.gridSize - 1 && 
+                                          this.board[r][c].type === this.board[r][c+1].type &&
+                                          this.board[r][c].special !== 'colorbomb';
+                        if (checkNext) {
+                            matchLen++;
+                        } else {
+                            if (matchLen >= 3) {
+                                const group = [];
+                                for (let i = 0; i < matchLen; i++) {
+                                    const tile = { r, c: c - i };
+                                    matchedSet.add(`${r},${c-i}`);
+                                    group.push(tile);
+                                }
+                                matchGroups.push({ dir: 'h', tiles: group });
+                            }
+                            matchLen = 1;
+                        }
+                    }
+                }
+
+                // Vertical Matches
+                for (let c = 0; c < this.gridSize; c++) {
+                    let matchLen = 1;
+                    for (let r = 0; r < this.gridSize; r++) {
+                        const checkNext = r < this.gridSize - 1 && 
+                                          this.board[r][c].type === this.board[r+1][c].type &&
+                                          this.board[r][c].special !== 'colorbomb';
+                        if (checkNext) {
+                            matchLen++;
+                        } else {
+                            if (matchLen >= 3) {
+                                const group = [];
+                                for (let i = 0; i < matchLen; i++) {
+                                    const tile = { r: r - i, c };
+                                    matchedSet.add(`${r-i},${c}`);
+                                    group.push(tile);
+                                }
+                                matchGroups.push({ dir: 'v', tiles: group });
+                            }
+                            matchLen = 1;
+                        }
+                    }
+                }
+
+                return matchGroups;
+            }
+
+            processMatches(matchGroups) {
+                const toClearMap = new Map();
+                const specialToSpawn = [];
+
+                matchGroups.forEach(g => {
+                    const len = g.tiles.length;
+                    const centerTile = g.tiles[Math.floor(len / 2)];
+
+                    if (len === 4) {
+                        // Create Striped Candy
+                        specialToSpawn.push({
+                            r: centerTile.r, c: centerTile.c,
+                            type: this.board[centerTile.r][centerTile.c].type,
+                            special: g.dir === 'h' ? 'striped-v' : 'striped-h'
+                        });
+                    } else if (len >= 5) {
+                        // Create Color Bomb
+                        specialToSpawn.push({
+                            r: centerTile.r, c: centerTile.c,
+                            type: 0,
+                            special: 'colorbomb'
+                        });
+                    }
+
+                    g.tiles.forEach(t => {
+                        toClearMap.set(`${t.r},${t.c}`, t);
+                    });
+                });
+
+                let clearList = Array.from(toClearMap.values());
+
+                // Expand clears for existing special candies activated in this match
+                const expandedClear = new Set();
+                clearList.forEach(t => {
+                    expandedClear.add(`${t.r},${t.c}`);
+                    const b = this.board[t.r][t.c];
+                    if (b.special === 'striped-h') {
+                        for (let c = 0; c < 8; c++) expandedClear.add(`${t.r},${c}`);
+                    } else if (b.special === 'striped-v') {
+                        for (let r = 0; r < 8; r++) expandedClear.add(`${r},${t.c}`);
+                    } else if (b.special === 'wrapped') {
+                        for (let dr = -1; dr <= 1; dr++) {
+                            for (let dc = -1; dc <= 1; dc++) {
+                                const nr = t.r + dr, nc = t.c + dc;
+                                if (nr >= 0 && nr < 8 && nc >= 0 && nc < 8) expandedClear.add(`${nr},${nc}`);
+                            }
+                        }
+                    }
+                });
+
+                clearList = Array.from(expandedClear).map(key => {
+                    const [r, c] = key.split(',').map(Number);
+                    return { r, c };
+                });
+
+                // Calculate Score
+                const matchScore = clearList.length * 20 + (clearList.length > 3 ? 100 : 0);
+                this.addScore(matchScore, clearList[0]);
+
+                if (clearList.length >= 4) sound.playSpecial(); else sound.playMatch();
+
+                this.clearTilesAndCascade(clearList, specialToSpawn);
+            }
+
+            clearTilesAndCascade(clearList, specialToSpawn = []) {
+                // Spawn particles & visual popping
+                clearList.forEach(t => {
+                    const tile = this.board[t.r][t.c];
+                    this.createExplosionParticles(t.c * this.tileSize + this.tileSize/2, t.r * this.tileSize + this.tileSize/2, CANDY_TYPES[tile.type].color);
+                    this.board[t.r][t.c] = null;
+                });
+
+                // Place new Special Candies created
+                specialToSpawn.forEach(s => {
+                    this.board[s.r][s.c] = {
+                        type: s.type,
+                        special: s.special,
+                        r: s.r, c: s.c,
+                        offsetY: 0, alpha: 1
+                    };
+                });
+
+                // Apply Gravity & Drop Candies Downward
+                setTimeout(() => {
+                    this.applyGravity();
+                }, 150);
+            }
+
+            applyGravity() {
+                const config = LEVEL_CONFIGS[this.currentLevel - 1];
+
+                for (let c = 0; c < this.gridSize; c++) {
+                    let emptySlots = 0;
+                    for (let r = this.gridSize - 1; r >= 0; r--) {
+                        if (this.board[r][c] === null) {
+                            emptySlots++;
+                        } else if (emptySlots > 0) {
+                            // Move tile down
+                            const tile = this.board[r][c];
+                            this.board[r + emptySlots][c] = tile;
+                            tile.r = r + emptySlots;
+                            tile.offsetY = -emptySlots * this.tileSize; // For drop animation
+                            this.board[r][c] = null;
+                        }
+                    }
+
+                    // Refill Top Rows
+                    for (let i = 0; i < emptySlots; i++) {
+                        const newRow = emptySlots - 1 - i;
+                        const type = Math.floor(Math.random() * config.candiesCount);
+                        this.board[newRow][c] = {
+                            type: type,
+                            special: null,
+                            r: newRow, c: c,
+                            offsetY: -emptySlots * this.tileSize,
+                            alpha: 1
+                        };
+                    }
+                }
+
+                sound.playExplode();
+
+                // Cascading Loop Check
+                setTimeout(() => {
+                    const newMatches = this.findMatches();
+                    if (newMatches.length > 0) {
+                        this.showOverlayMsg("COMBO!");
+                        this.processMatches(newMatches);
+                    } else {
+                        this.isAnimating = false;
+                        this.checkBoardStatus();
+                    }
+                }, 300);
+            }
+
+            checkBoardStatus() {
+                // Check Win/Lose Conditions
+                if (this.score >= this.targetScore) {
+                    this.handleWin();
+                    return;
+                }
+                if (this.movesLeft <= 0) {
+                    this.handleLose();
+                    return;
+                }
+
+                // Check for valid remaining moves
+                if (!this.hasPossibleMoves()) {
+                    this.showOverlayMsg("NO MOVES! SHUFFLING...");
+                    sound.playSpecial();
+                    setTimeout(() => this.shuffleBoard(), 1200);
+                }
+            }
+
+            hasPossibleMoves() {
+                // Check all possible 1-tile swaps
+                for (let r = 0; r < this.gridSize; r++) {
+                    for (let c = 0; c < this.gridSize; c++) {
+                        // Try Horizontal swap
+                        if (c < this.gridSize - 1) {
+                            this.swapBoardTiles({ r, c }, { r, c: c + 1 });
+                            const matches = this.findMatches();
+                            this.swapBoardTiles({ r, c }, { r, c: c + 1 }); // Revert
+                            if (matches.length > 0) return true;
+                        }
+                        // Try Vertical swap
+                        if (r < this.gridSize - 1) {
+                            this.swapBoardTiles({ r, c }, { r: r + 1, c });
+                            const matches = this.findMatches();
+                            this.swapBoardTiles({ r, c }, { r: r + 1, c }); // Revert
+                            if (matches.length > 0) return true;
+                        }
+                    }
+                }
+                return false;
+            }
+
+            shuffleBoard() {
+                const allCandies = [];
+                for (let r = 0; r < this.gridSize; r++) {
+                    for (let c = 0; c < this.gridSize; c++) {
+                        allCandies.push(this.board[r][c]);
+                    }
+                }
+                // Fisher-Yates Shuffle
+                for (let i = allCandies.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [allCandies[i], allCandies[j]] = [allCandies[j], allCandies[i]];
+                }
+
+                let idx = 0;
+                for (let r = 0; r < this.gridSize; r++) {
+                    for (let c = 0; c < this.gridSize; c++) {
+                        this.board[r][c] = allCandies[idx++];
+                        this.board[r][c].r = r;
+                        this.board[r][c].c = c;
+                    }
+                }
+
+                if (!this.hasPossibleMoves() || this.findMatches().length > 0) {
+                    this.shuffleBoard(); // Ensure valid shuffle
+                } else {
+                    this.drawBoard();
+                }
+            }
+
+            /* ----------------------------------------------------------------------
+               7. WIN / LOSE & SCORING MODALS
+               ---------------------------------------------------------------------- */
+            addScore(pts, originTile) {
+                this.score += pts;
+                document.getElementById('game-score').innerText = this.score;
+
+                // Update Progress bar
+                const pct = Math.min(100, (this.score / this.targetScore) * 100);
+                document.getElementById('game-progress-bar').style.width = `${pct}%`;
+
+                // Add Floating Score Text
+                if (originTile) {
+                    this.floatingTexts.push({
+                        text: `+${pts}`,
+                        x: originTile.c * this.tileSize + this.tileSize / 2,
+                        y: originTile.r * this.tileSize + this.tileSize / 2,
+                        alpha: 1.0,
+                        life: 40
+                    });
+                }
+            }
+
+            handleWin() {
+                sound.playWin();
+                const bonus = this.movesLeft * 150;
+                const totalScore = this.score + bonus;
+
+                // Calculate Star Rating (1 to 3 Stars)
+                let stars = 1;
+                if (totalScore >= this.targetScore * 1.4) stars = 3;
+                else if (totalScore >= this.targetScore * 1.15) stars = 2;
+
+                // Save Progress
+                this.progress.stars[this.currentLevel] = Math.max(this.progress.stars[this.currentLevel] || 0, stars);
+                if (this.currentLevel >= this.progress.unlockedLevel && this.currentLevel < TOTAL_LEVELS) {
+                    this.progress.unlockedLevel = this.currentLevel + 1;
+                }
+                if (totalScore > (this.progress.bestScore || 0)) {
+                    this.progress.bestScore = totalScore;
+                    this.updateHomeBestScore();
+                }
+                this.saveProgress();
+
+                // UI Display
+                document.getElementById('win-score-val').innerText = this.score;
+                document.getElementById('win-bonus-val').innerText = `+${bonus}`;
+                document.getElementById('win-total-val').innerText = totalScore;
+
+                // Animate Stars
+                ['star-1', 'star-2', 'star-3'].forEach((id, idx) => {
+                    const el = document.getElementById(id);
+                    if (idx < stars) {
+                        el.className = 'text-5xl text-yellow-400 drop-shadow-md transform scale-125 transition duration-500';
+                    } else {
+                        el.className = 'text-5xl text-gray-300 transform scale-90 transition duration-500';
+                    }
+                });
+
+                document.getElementById('modal-win').classList.remove('hidden');
+            }
+
+            handleLose() {
+                sound.playLose();
+                document.getElementById('lose-target-val').innerText = this.targetScore;
+                document.getElementById('lose-score-val').innerText = this.score;
+                document.getElementById('modal-lose').classList.remove('hidden');
+            }
+
+            showOverlayMsg(text) {
+                const overlay = document.getElementById('canvas-overlay-text');
+                const content = document.getElementById('overlay-msg-content');
+                content.innerText = text;
+                overlay.style.opacity = '1';
+                setTimeout(() => { overlay.style.opacity = '0'; }, 1000);
+            }
+
+            /* ----------------------------------------------------------------------
+               8. CANVAS RENDERING & CANDY GRAPHICS PROCEDURES
+               ---------------------------------------------------------------------- */
+            startRenderLoop() {
+                const loop = () => {
+                    this.updateAnimations();
+                    this.drawBoard();
+                    requestAnimationFrame(loop);
+                };
+                requestAnimationFrame(loop);
+            }
+
+            updateAnimations() {
+                // Smooth tile drop easing
+                for (let r = 0; r < this.gridSize; r++) {
+                    for (let c = 0; c < this.gridSize; c++) {
+                        const tile = this.board[r][c];
+                        if (tile && tile.offsetY < 0) {
+                            tile.offsetY += 12;
+                            if (tile.offsetY > 0) tile.offsetY = 0;
+                        }
+                    }
+                }
+
+                // Update Explosion Particles
+                for (let i = this.particles.length - 1; i >= 0; i--) {
+                    const p = this.particles[i];
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.alpha -= 0.03;
+                    if (p.alpha <= 0) this.particles.splice(i, 1);
+                }
+
+                // Update Floating Score Texts
+                for (let i = this.floatingTexts.length - 1; i >= 0; i--) {
+                    const ft = this.floatingTexts[i];
+                    ft.y -= 1.2;
+                    ft.alpha -= 0.02;
+                    if (ft.alpha <= 0) this.floatingTexts.splice(i, 1);
+                }
+            }
+
+            createExplosionParticles(x, y, color) {
+                for (let i = 0; i < 12; i++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const speed = 2 + Math.random() * 4;
+                    this.particles.push({
+                        x: x, y: y,
+                        vx: Math.cos(angle) * speed,
+                        vy: Math.sin(angle) * speed,
+                        size: 4 + Math.random() * 6,
+                        color: color,
+                        alpha: 1.0
+                    });
+                }
+            }
+
+            drawBoard() {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+                // Draw Grid Background Cells
+                for (let r = 0; r < this.gridSize; r++) {
+                    for (let c = 0; c < this.gridSize; c++) {
+                        const x = c * this.tileSize;
+                        const y = r * this.tileSize;
+
+                        // Alternating checkerboard tiles
+                        this.ctx.fillStyle = (r + c) % 2 === 0 ? 'rgba(255, 255, 255, 0.4)' : 'rgba(255, 255, 255, 0.2)';
+                        this.ctx.beginPath();
+                        this.ctx.roundRect(x + 2, y + 2, this.tileSize - 4, this.tileSize - 4, 12);
+                        this.ctx.fill();
+
+                        // Highlight Selected Tile
+                        if (this.selectedTile && this.selectedTile.r === r && this.selectedTile.c === c) {
+                            this.ctx.strokeStyle = '#fff';
+                            this.ctx.lineWidth = 4;
+                            this.ctx.stroke();
+                        }
+                    }
+                }
+
+                // Draw Candies
+                for (let r = 0; r < this.gridSize; r++) {
+                    for (let c = 0; c < this.gridSize; c++) {
+                        const tile = this.board[r][c];
+                        if (tile) {
+                            const x = c * this.tileSize;
+                            const y = r * this.tileSize + tile.offsetY;
+                            this.drawCandy(x, y, this.tileSize, tile);
+                        }
+                    }
+                }
+
+                // Draw Explosion Particles
+                this.particles.forEach(p => {
+                    this.ctx.save();
+                    this.ctx.globalAlpha = p.alpha;
+                    this.ctx.fillStyle = p.color;
+                    this.ctx.beginPath();
+                    this.ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                    this.ctx.fill();
+                    this.ctx.restore();
+                });
+
+                // Draw Floating Score Texts
+                this.floatingTexts.forEach(ft => {
+                    this.ctx.save();
+                    this.ctx.globalAlpha = ft.alpha;
+                    this.ctx.font = 'bold 20px "Fredoka One", cursive';
+                    this.ctx.fillStyle = '#fff';
+                    this.ctx.strokeStyle = '#d1365c';
+                    this.ctx.lineWidth = 4;
+                    this.ctx.strokeText(ft.text, ft.x - 15, ft.y);
+                    this.ctx.fillText(ft.text, ft.x - 15, ft.y);
+                    this.ctx.restore();
+                });
+            }
+
+            drawCandy(x, y, size, tile) {
+                const padding = size * 0.12;
+                const cSize = size - padding * 2;
+                const cx = x + size / 2;
+                const cy = y + size / 2;
+                const radius = cSize / 2;
+
+                this.ctx.save();
+
+                // Special Candy Color Bomb (Rainbow Orb)
+                if (tile.special === 'colorbomb') {
+                    const grad = this.ctx.createRadialGradient(cx, cy, 2, cx, cy, radius);
+                    grad.addColorStop(0, '#fff');
+                    grad.addColorStop(0.2, '#ff3b5c');
+                    grad.addColorStop(0.4, '#f1c40f');
+                    grad.addColorStop(0.6, '#2ecc71');
+                    grad.addColorStop(0.8, '#00d2ff');
+                    grad.addColorStop(1, '#9b59b6');
+
+                    this.ctx.fillStyle = grad;
+                    this.ctx.beginPath();
+                    this.ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+                    this.ctx.fill();
+
+                    // Sparkle dots
+                    this.ctx.fillStyle = '#fff';
+                    for (let i = 0; i < 4; i++) {
+                        const ang = (Date.now() / 300) + (i * Math.PI / 2);
+                        const sx = cx + Math.cos(ang) * (radius * 0.5);
+                        const sy = cy + Math.sin(ang) * (radius * 0.5);
+                        this.ctx.beginPath();
+                        this.ctx.arc(sx, sy, 3, 0, Math.PI * 2);
+                        this.ctx.fill();
+                    }
+                    this.ctx.restore();
+                    return;
+                }
+
+                // Standard Candies Vector Graphics
+                const candyInfo = CANDY_TYPES[tile.type] || CANDY_TYPES[0];
+                this.ctx.fillStyle = candyInfo.color;
+
+                switch (tile.type) {
+                    case 0: // Red Jelly Drop
+                        this.ctx.beginPath();
+                        this.ctx.arc(cx, cy + radius * 0.2, radius * 0.8, 0, Math.PI);
+                        this.ctx.quadraticCurveTo(cx - radius, cy - radius * 0.8, cx, cy - radius);
+                        this.ctx.quadraticCurveTo(cx + radius, cy - radius * 0.8, cx + radius * 0.8, cy + radius * 0.2);
+                        this.ctx.fill();
+                        break;
+
+                    case 1: // Blue Diamond
+                        this.ctx.beginPath();
+                        this.ctx.moveTo(cx, cy - radius);
+                        this.ctx.lineTo(cx + radius, cy);
+                        this.ctx.lineTo(cx, cy + radius);
+                        this.ctx.lineTo(cx - radius, cy);
+                        this.ctx.closePath();
+                        this.ctx.fill();
+                        break;
+
+                    case 2: // Green Sugar Gummy
+                        this.ctx.beginPath();
+                        this.ctx.roundRect(cx - radius * 0.85, cy - radius * 0.85, cSize * 0.85, cSize * 0.85, 10);
+                        this.ctx.fill();
+                        break;
+
+                    case 3: // Yellow 5-Point Star
+                        this.drawStar(cx, cy, 5, radius, radius * 0.5);
+                        this.ctx.fill();
+                        break;
+
+                    case 4: // Purple Swirl Orb
+                        this.ctx.beginPath();
+                        this.ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+                        this.ctx.fill();
+                        // Inner Swirl Line
+                        this.ctx.strokeStyle = '#fff';
+                        this.ctx.lineWidth = 3;
+                        this.ctx.beginPath();
+                        this.ctx.arc(cx, cy, radius * 0.5, 0, Math.PI * 1.2);
+                        this.ctx.stroke();
+                        break;
+
+                    case 5: // Orange Round Candy
+                    default:
+                        this.ctx.beginPath();
+                        this.ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+                        this.ctx.fill();
+                        break;
+                }
+
+                // Inner Sheen / Shiny Highlight
+                this.ctx.fillStyle = 'rgba(255, 255, 255, 0.55)';
+                this.ctx.beginPath();
+                this.ctx.ellipse(cx - radius * 0.3, cy - radius * 0.35, radius * 0.3, radius * 0.18, -Math.PI / 4, 0, Math.PI * 2);
+                this.ctx.fill();
+
+                // Special Candy Stripes (Horizontal/Vertical)
+                if (tile.special === 'striped-h' || tile.special === 'striped-v') {
+                    this.ctx.strokeStyle = '#fff';
+                    this.ctx.lineWidth = 4;
+                    this.ctx.beginPath();
+                    if (tile.special === 'striped-h') {
+                        this.ctx.moveTo(cx - radius, cy);
+                        this.ctx.lineTo(cx + radius, cy);
+                    } else {
+                        this.ctx.moveTo(cx, cy - radius);
+                        this.ctx.lineTo(cx, cy + radius);
+                    }
+                    this.ctx.stroke();
+                }
+
+                this.ctx.restore();
+            }
+
+            drawStar(cx, cy, spikes, outerRadius, innerRadius) {
+                let rot = (Math.PI / 2) * 3;
+                let x = cx;
+                let y = cy;
+                const step = Math.PI / spikes;
+
+                this.ctx.beginPath();
+                this.ctx.moveTo(cx, cy - outerRadius);
+                for (let i = 0; i < spikes; i++) {
+                    x = cx + Math.cos(rot) * outerRadius;
+                    y = cy + Math.sin(rot) * outerRadius;
+                    this.ctx.lineTo(x, y);
+                    rot += step;
+
+                    x = cx + Math.cos(rot) * innerRadius;
+                    y = cy + Math.sin(rot) * innerRadius;
+                    this.ctx.lineTo(x, y);
+                    rot += step;
+                }
+                this.ctx.lineTo(cx, cy - outerRadius);
+                this.ctx.closePath();
+            }
+        }
+
+        // Initialize Game Instance on Load
+        window.onload = () => {
+            window.game = new CandyBlastGame();
+        };
+    </script>
+</body>
+</html>
