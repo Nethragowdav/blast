@@ -15,7 +15,7 @@
     <style>
         body {
             font-family: 'Nunito', sans-serif;
-            touch-action: manipulation;
+            touch-action: none;
             user-select: none;
             -webkit-user-select: none;
             overflow: hidden;
@@ -288,9 +288,9 @@
             </div>
 
             <!-- Interactive 3D WebGL Canvas Board Container (9x9 Ratio) -->
-            <div id="board-container" class="relative my-auto flex items-center justify-center w-full aspect-square max-w-[360px] mx-auto p-2 bg-gradient-to-b from-purple-900/90 to-indigo-950/90 rounded-3xl border-4 border-white/40 shadow-[0_0_40px_rgba(236,72,153,0.5)] backdrop-blur-md overflow-hidden">
+            <div id="board-container" class="relative my-auto flex items-center justify-center w-full aspect-square max-w-[360px] mx-auto p-2 bg-gradient-to-b from-purple-900/90 to-indigo-950/90 rounded-3xl border-4 border-white/40 shadow-[0_0_40px_rgba(236,72,153,0.5)] backdrop-blur-md overflow-hidden touch-none">
                 <!-- Three.js WebGL / High-End Canvas Viewport -->
-                <canvas id="game-canvas" class="w-full h-full rounded-2xl cursor-pointer relative z-0"></canvas>
+                <canvas id="game-canvas" class="w-full h-full rounded-2xl cursor-pointer relative z-0 touch-none"></canvas>
             </div>
 
             <!-- Bottom Booster Toolbar -->
@@ -474,7 +474,7 @@
                 if (this.muted) return;
                 this.init();
                 if (!this.ctx) return;
-                const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+                const notes = [523.25, 659.25, 783.99, 1046.50];
                 notes.forEach((freq, idx) => {
                     const osc = this.ctx.createOscillator();
                     const gain = this.ctx.createGain();
@@ -493,7 +493,6 @@
                 if (this.muted) return;
                 this.init();
                 if (!this.ctx) return;
-                // Fluid liquid splash noise synth
                 const bufferSize = this.ctx.sampleRate * 0.25;
                 const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
                 const data = buffer.getChannelData(0);
@@ -565,12 +564,12 @@
         const LEVEL_HEIGHT_STEP = 55;
 
         const CANDY_TYPES = [
-            { id: 0, name: 'Ruby Jelly', main: '#ef4444', light: '#fca5a5', dark: '#881337', gelGlow: '#f43f5e', shape: 'bean', roughness: 0.1, transmission: 0.85 },
-            { id: 1, name: 'Ocean Diamond', main: '#3b82f6', light: '#93c5fd', dark: '#1e3a8a', gelGlow: '#60a5fa', shape: 'diamond', roughness: 0.08, transmission: 0.9 },
-            { id: 2, name: 'Emerald Gummy', main: '#10b981', light: '#6ee7b7', dark: '#064e3b', gelGlow: '#34d399', shape: 'square', roughness: 0.12, transmission: 0.8 },
-            { id: 3, name: 'Golden Lemon', main: '#f59e0b', light: '#fde047', dark: '#78350f', gelGlow: '#fbbf24', shape: 'triangle', roughness: 0.1, transmission: 0.85 },
-            { id: 4, name: 'Purple Grape', main: '#a855f7', light: '#e9d5ff', dark: '#4c1d95', gelGlow: '#c084fc', shape: 'cluster', roughness: 0.1, transmission: 0.85 },
-            { id: 5, name: 'Tangerine Oval', main: '#f97316', light: '#fed7aa', dark: '#7c2d12', gelGlow: '#fb923c', shape: 'oval', roughness: 0.1, transmission: 0.85 }
+            { id: 0, name: 'Ruby Jelly', main: '#ef4444', light: '#fca5a5', dark: '#881337', gelGlow: '#f43f5e', shape: 'bean' },
+            { id: 1, name: 'Ocean Diamond', main: '#3b82f6', light: '#93c5fd', dark: '#1e3a8a', gelGlow: '#60a5fa', shape: 'diamond' },
+            { id: 2, name: 'Emerald Gummy', main: '#10b981', light: '#6ee7b7', dark: '#064e3b', gelGlow: '#34d399', shape: 'square' },
+            { id: 3, name: 'Golden Lemon', main: '#f59e0b', light: '#fde047', dark: '#78350f', gelGlow: '#fbbf24', shape: 'triangle' },
+            { id: 4, name: 'Purple Grape', main: '#a855f7', light: '#e9d5ff', dark: '#4c1d95', gelGlow: '#c084fc', shape: 'cluster' },
+            { id: 5, name: 'Tangerine Oval', main: '#f97316', light: '#fed7aa', dark: '#7c2d12', gelGlow: '#fb923c', shape: 'oval' }
         ];
 
         function getLevelConfig(levelNum) {
@@ -584,7 +583,7 @@
         }
 
         /* ==========================================================================
-           3. 3D WEBGL JELLY RENDERER & GAME ENGINE
+           3. GAME ENGINE & TOUCH SWIPE CONTROLS
            ========================================================================== */
         class CandyBlastGame {
             constructor() {
@@ -800,7 +799,7 @@
             }
 
             /* ==========================================================================
-               MAP ENGINE & UTILITIES
+               ADVENTURE MAP VIEWPORT & RENDERER
                ========================================================================== */
             getMapPoint(levelIndex) {
                 const width = 360;
@@ -939,7 +938,7 @@
             }
 
             /* ==========================================================================
-               GAMEPLAY CORE & CANVAS LOOP
+               GAMEPLAY CORE & TOUCH / SWIPE CONTROLS
                ========================================================================== */
             startLevel(levelNum) {
                 this.currentLevel = levelNum;
@@ -987,13 +986,11 @@
 
                 this.tileSize = rect.width / BOARD_SIZE;
                 
-                // Remove old listeners and attach robust touch swipe & mouse drag controls
-                this.bindTouchControls();
-
+                this.bindMobileTouchAndSwipe();
                 this.startRenderLoop();
             }
 
-            bindTouchControls() {
+            bindMobileTouchAndSwipe() {
                 let startX = 0;
                 let startY = 0;
                 let dragTile = null;
@@ -1011,13 +1008,13 @@
                     return null;
                 };
 
-                this.canvas.onpointerdown = (e) => {
+                const handleStart = (clientX, clientY) => {
                     if (this.isAnimating) return;
-                    const tile = getTileCoords(e.clientX, e.clientY);
+                    const tile = getTileCoords(clientX, clientY);
                     if (!tile) return;
 
-                    startX = e.clientX;
-                    startY = e.clientY;
+                    startX = clientX;
+                    startY = clientY;
                     dragTile = tile;
                     isDragging = true;
 
@@ -1028,11 +1025,11 @@
                     if (navigator.vibrate) navigator.vibrate(15);
                 };
 
-                this.canvas.onpointermove = (e) => {
+                const handleMove = (clientX, clientY) => {
                     if (!isDragging || !dragTile || this.isAnimating) return;
-                    const dx = e.clientX - startX;
-                    const dy = e.clientY - startY;
-                    const threshold = this.tileSize * 0.45;
+                    const dx = clientX - startX;
+                    const dy = clientY - startY;
+                    const threshold = this.tileSize * 0.35;
 
                     if (Math.abs(dx) > threshold || Math.abs(dy) > threshold) {
                         let targetX = dragTile.x;
@@ -1052,17 +1049,36 @@
                     }
                 };
 
-                this.canvas.onpointerup = (e) => {
+                const handleEnd = (clientX, clientY) => {
                     if (!isDragging || !dragTile || this.isAnimating) return;
                     isDragging = false;
-                    const tile = getTileCoords(e.clientX, e.clientY);
+                    const tile = getTileCoords(clientX, clientY);
                     if (tile && tile.x === dragTile.x && tile.y === dragTile.y) {
                         this.handleTileClick(tile);
                     }
                 };
 
-                this.canvas.onpointercancel = () => {
-                    isDragging = false;
+                // Pointer Events for universal touch & mouse support
+                this.canvas.onpointerdown = (e) => handleStart(e.clientX, e.clientY);
+                this.canvas.onpointermove = (e) => handleMove(e.clientX, e.clientY);
+                this.canvas.onpointerup = (e) => handleEnd(e.clientX, e.clientY);
+                this.canvas.onpointercancel = () => { isDragging = false; };
+
+                // Explicit Touch Event Fallback for Mobile Devices
+                this.canvas.ontouchstart = (e) => {
+                    if (e.touches.length > 0) {
+                        handleStart(e.touches[0].clientX, e.touches[0].clientY);
+                    }
+                };
+                this.canvas.ontouchmove = (e) => {
+                    if (e.touches.length > 0) {
+                        handleMove(e.touches[0].clientX, e.touches[0].clientY);
+                    }
+                };
+                this.canvas.ontouchend = (e) => {
+                    if (e.changedTouches.length > 0) {
+                        handleEnd(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+                    }
                 };
             }
 
@@ -1112,21 +1128,6 @@
                         this.board[r][c] = this.board[nr][nc];
                         this.board[nr][nc] = temp;
                     }
-                }
-            }
-
-            onCanvasClick(e) {
-                if (this.isAnimating || !this.canvas) return;
-
-                const rect = this.canvas.getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                const y = e.clientY - rect.top;
-
-                const col = Math.floor(x / this.tileSize);
-                const row = Math.floor(y / this.tileSize);
-
-                if (col >= 0 && col < BOARD_SIZE && row >= 0 && row < BOARD_SIZE) {
-                    this.handleTileClick({ x: col, y: row });
                 }
             }
 
@@ -1217,7 +1218,6 @@
                     if (navigator.vibrate) navigator.vibrate(25);
                     await this.processMatches();
                 } else {
-                    // Invalid move: shake board & revert
                     if (navigator.vibrate) navigator.vibrate([30, 30, 30]);
                     this.triggerBoardShake();
                     this.board[tile1.y][tile1.x] = c1;
