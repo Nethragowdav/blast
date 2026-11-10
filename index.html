@@ -3,84 +3,113 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CANDY BLAST - Match 3 Puzzle Game</title>
-    <!-- Tailwind CSS CDN -->
+    <title>Candy Kingdom - Match-3 Saga</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Nunito:wght@700;900&display=swap" rel="stylesheet">
+    <!-- Three.js Library for 3D Gelatin Shader & WebGL Rendering -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
-        * {
-            user-select: none;
-            -webkit-user-select: none;
-            touch-action: manipulation;
-        }
         body {
             font-family: 'Nunito', sans-serif;
-            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 45%, #a1c4fd 100%);
-            min-height: 100vh;
-            overflow-x: hidden;
-            margin: 0;
-            padding: 0;
+            touch-action: manipulation;
+            user-select: none;
+            -webkit-user-select: none;
+            overflow: hidden;
+            background: #0f172a;
         }
+
         .font-fredoka {
-            font-family: 'Fredoka One', cursive;
+            font-family: 'Fredoka', cursive;
         }
-        .game-card-shadow {
-            box-shadow: 0 15px 35px rgba(0,0,0,0.2), 0 5px 15px rgba(255,255,255,0.4) inset;
+
+        /* Glassmorphism Styling */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.18);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 2px solid rgba(255, 255, 255, 0.35);
         }
+
+        /* Buttons & Shading */
         .candy-btn {
-            background: linear-gradient(180deg, #ff6b8b 0%, #d1365c 100%);
-            box-shadow: 0 6px 0 #9e1f3d, 0 10px 15px rgba(0,0,0,0.3);
+            background: linear-gradient(180deg, #ec4899 0%, #be185d 100%);
+            box-shadow: 0 6px 0 #831843, 0 8px 15px rgba(0,0,0,0.4);
             transition: all 0.1s ease;
         }
         .candy-btn:active {
             transform: translateY(4px);
-            box-shadow: 0 2px 0 #9e1f3d, 0 5px 10px rgba(0,0,0,0.3);
+            box-shadow: 0 2px 0 #831843, 0 4px 8px rgba(0,0,0,0.4);
         }
-        .candy-btn-blue {
-            background: linear-gradient(180deg, #4facfe 0%, #00f2fe 100%);
-            box-shadow: 0 6px 0 #008ba3, 0 10px 15px rgba(0,0,0,0.3);
-        }
-        .candy-btn-blue:active {
-            transform: translateY(4px);
-            box-shadow: 0 2px 0 #008ba3, 0 5px 10px rgba(0,0,0,0.3);
-        }
+
         .candy-btn-green {
-            background: linear-gradient(180deg, #43e97b 0%, #38f9d7 100%);
-            box-shadow: 0 6px 0 #1f9e58, 0 10px 15px rgba(0,0,0,0.3);
+            background: linear-gradient(180deg, #22c55e 0%, #15803d 100%);
+            box-shadow: 0 6px 0 #14532d, 0 8px 15px rgba(0,0,0,0.4);
         }
         .candy-btn-green:active {
             transform: translateY(4px);
-            box-shadow: 0 2px 0 #1f9e58, 0 5px 10px rgba(0,0,0,0.3);
+            box-shadow: 0 2px 0 #14532d;
         }
+
         .candy-btn-yellow {
-            background: linear-gradient(180deg, #ffdb53 0%, #fda085 100%);
-            box-shadow: 0 6px 0 #c26919, 0 10px 15px rgba(0,0,0,0.3);
+            background: linear-gradient(180deg, #eab308 0%, #ca8a04 100%);
+            box-shadow: 0 6px 0 #713f12, 0 8px 15px rgba(0,0,0,0.4);
         }
         .candy-btn-yellow:active {
             transform: translateY(4px);
-            box-shadow: 0 2px 0 #c26919, 0 5px 10px rgba(0,0,0,0.3);
+            box-shadow: 0 2px 0 #713f12;
         }
-        .glass-panel {
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(10px);
-            border: 4px solid rgba(255, 255, 255, 0.9);
+
+        .candy-btn-blue {
+            background: linear-gradient(180deg, #06b6d4 0%, #0369a1 100%);
+            box-shadow: 0 6px 0 #0c4a6e, 0 8px 15px rgba(0,0,0,0.4);
         }
-        /* Custom Floating Background Animation */
-        @keyframes float {
-            0% { transform: translateY(0px) rotate(0deg); }
-            50% { transform: translateY(-20px) rotate(10deg); }
-            100% { transform: translateY(0px) rotate(0deg); }
+        .candy-btn-blue:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #0c4a6e;
+        }
+
+        /* Floating animations */
+        @keyframes floatSlow {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-12px) rotate(3deg); }
         }
         .floating-candy {
-            animation: float 4s ease-in-out infinite;
+            animation: floatSlow 4s ease-in-out infinite;
         }
         .floating-candy-delayed {
-            animation: float 5s ease-in-out 1.5s infinite;
+            animation: floatSlow 5s ease-in-out 2s infinite;
         }
-        /* Custom scrollbar for level map */
+
+        /* Adventure Map Path & Pulse Effects */
+        @keyframes pulseGlow {
+            0%, 100% { box-shadow: 0 0 15px #fde047, 0 0 30px #ec4899; transform: scale(1); }
+            50% { box-shadow: 0 0 25px #fde047, 0 0 45px #ec4899; transform: scale(1.08); }
+        }
+        .current-level-pulse {
+            animation: pulseGlow 1.8s ease-in-out infinite;
+        }
+
+        /* Floating Score Text Popups */
+        @keyframes scoreFloat {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-35px) scale(1.3); }
+        }
+        .score-popup {
+            position: absolute;
+            pointer-events: none;
+            font-family: 'Fredoka', cursive;
+            font-weight: 900;
+            color: #fde047;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8), 0 0 8px #ec4899;
+            animation: scoreFloat 0.8s ease-out forwards;
+            z-index: 50;
+        }
+
+        /* Scrollbar styling */
         .no-scrollbar::-webkit-scrollbar {
             display: none;
         }
@@ -90,1507 +119,1458 @@
         }
     </style>
 </head>
-<body class="flex flex-col items-center justify-center min-h-screen p-2 sm:p-4 select-none">
+<body class="w-screen h-screen flex items-center justify-center p-0 m-0 bg-slate-900 select-none">
 
-    <!-- GAME CONTAINER -->
-    <div id="game-app" class="relative w-full max-w-md h-[92vh] max-h-[850px] bg-gradient-to-b from-pink-300 via-purple-300 to-indigo-400 rounded-3xl border-8 border-white shadow-2xl overflow-hidden flex flex-col justify-between">
+    <!-- GAME APP CONTAINER -->
+    <div id="game-app" class="relative z-10 w-full max-w-md h-full max-h-[920px] bg-gradient-to-b from-pink-500 via-purple-700 to-indigo-900 rounded-none sm:rounded-3xl border-0 sm:border-8 border-white/90 shadow-2xl overflow-hidden flex flex-col justify-between">
+        
+        <!-- SCREEN 0: SPLASH SCREEN -->
+        <div id="screen-splash" class="absolute inset-0 z-50 bg-gradient-to-b from-pink-600 via-purple-700 to-indigo-900 flex flex-col items-center justify-center p-6 text-center">
+            <div class="floating-candy mb-6">
+                <div class="text-5xl font-black font-fredoka text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-pink-300 to-cyan-300 drop-shadow-[0_5px_5px_rgba(0,0,0,0.8)]">
+                    CANDY KINGDOM
+                </div>
+                <div class="text-sm font-bold text-yellow-200 uppercase tracking-widest mt-2">
+                    Saga Match-3 Quest
+                </div>
+            </div>
 
-        <!-- BACKGROUND FLOATING DECORATIONS (HOME & MENU) -->
-        <div id="bg-decorations" class="absolute inset-0 pointer-events-none overflow-hidden">
-            <div class="floating-candy absolute top-10 left-6 text-4xl opacity-40">🍬</div>
-            <div class="floating-candy-delayed absolute top-32 right-8 text-5xl opacity-40">🍭</div>
-            <div class="floating-candy absolute bottom-20 left-10 text-5xl opacity-40">🍩</div>
-            <div class="floating-candy-delayed absolute bottom-36 right-6 text-4xl opacity-40">🧁</div>
-            <div class="floating-candy absolute top-1/2 left-4 text-3xl opacity-30">⭐️</div>
+            <div class="w-32 h-32 rounded-full bg-white/20 p-2 backdrop-blur-md border-4 border-white/50 mb-8 floating-candy-delayed flex items-center justify-center shadow-2xl">
+                <div class="text-6xl animate-bounce">🍬</div>
+            </div>
+
+            <button id="btn-start-splash" class="w-64 py-4 text-2xl font-black font-fredoka text-white uppercase tracking-wider rounded-2xl candy-btn flex items-center justify-center gap-3">
+                <i class="fa-solid fa-play text-yellow-300"></i> START GAME
+            </button>
+        </div>
+
+        <!-- TOP STATUS / PROFILE HEADER (Home Screen) -->
+        <div id="top-nav" class="flex justify-between items-center p-3 bg-white/20 backdrop-blur-md border-b border-white/30 z-20">
+            <div class="flex items-center gap-2">
+                <div class="w-10 h-10 rounded-full bg-pink-500 border-2 border-white flex items-center justify-center text-white shadow-md">
+                    <i class="fa-solid fa-user-ninja"></i>
+                </div>
+                <div>
+                    <div class="text-[10px] text-pink-200 font-bold uppercase tracking-wider">Player</div>
+                    <div class="text-xs font-extrabold text-white font-fredoka">Candy Master</div>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-3">
+                <div class="flex items-center gap-1 bg-amber-500/90 px-3 py-1 rounded-full border border-yellow-200 text-white font-fredoka text-xs shadow-md">
+                    <i class="fa-solid fa-coins text-yellow-300"></i>
+                    <span id="player-coins">250</span>
+                </div>
+                <div class="flex items-center gap-1 bg-rose-500/90 px-3 py-1 rounded-full border border-rose-200 text-white font-fredoka text-xs shadow-md">
+                    <i class="fa-solid fa-heart text-white animate-pulse"></i>
+                    <span>5</span>
+                </div>
+            </div>
         </div>
 
         <!-- SCREEN 1: HOME SCREEN -->
-        <div id="screen-home" class="relative z-10 flex flex-col items-center justify-between h-full p-6 text-center">
-            <!-- Top Bar Info -->
-            <div class="w-full flex justify-between items-center mt-2">
-                <div class="flex items-center gap-2 bg-white/70 px-4 py-2 rounded-full border-2 border-white shadow">
-                    <i class="fa-solid fa-crown text-yellow-500 text-lg"></i>
-                    <span class="font-fredoka text-pink-600 text-sm sm:text-base">BEST: <span id="home-best-score">0</span></span>
+        <div id="screen-home" class="flex-1 flex flex-col justify-between items-center p-6 text-center relative overflow-hidden z-20">
+            <!-- Title Logo -->
+            <div class="mt-2 floating-candy relative z-10">
+                <div class="text-5xl font-black font-fredoka text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-pink-400 to-cyan-300 drop-shadow-[0_5px_5px_rgba(0,0,0,0.8)]">
+                    CANDY
                 </div>
-                <button id="btn-sound-toggle-home" class="w-10 h-10 bg-white/80 rounded-full border-2 border-white text-pink-500 flex items-center justify-center shadow-md active:scale-95 transition">
-                    <i class="fa-solid fa-volume-high text-lg"></i>
-                </button>
-            </div>
-
-            <!-- Title & Mascot -->
-            <div class="my-auto flex flex-col items-center">
-                <div class="relative">
-                    <h1 class="font-fredoka text-5xl sm:text-6xl text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-yellow-400 to-pink-500 drop-shadow-[0_5px_5px_rgba(0,0,0,0.3)] tracking-wider">
-                        CANDY
-                    </h1>
-                    <h1 class="font-fredoka text-4xl sm:text-5xl text-transparent bg-clip-text bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 drop-shadow-[0_4px_4px_rgba(0,0,0,0.3)] tracking-widest -mt-2">
-                        BLAST
-                    </h1>
+                <div class="text-4xl font-black font-fredoka text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-purple-300 to-yellow-300 drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)] mt-[-8px]">
+                    KINGDOM
                 </div>
-                <div class="w-32 h-32 mt-4 relative flex items-center justify-center">
-                    <div class="absolute inset-0 bg-yellow-300 rounded-full blur-xl opacity-60 animate-pulse"></div>
-                    <span class="text-7xl relative z-10 floating-candy">👑🍬</span>
+                <div class="mt-1 inline-block bg-pink-600/80 text-yellow-200 font-bold text-[10px] uppercase px-3 py-1 rounded-full border border-yellow-300/50 shadow">
+                    5,000 Level Adventure
                 </div>
             </div>
 
-            <!-- Action Buttons -->
-            <div class="w-full space-y-4 mb-4">
-                <button id="btn-play-main" class="candy-btn w-full py-4 rounded-2xl font-fredoka text-2xl text-white tracking-wide border-2 border-white/50 flex items-center justify-center gap-3">
-                    <i class="fa-solid fa-play"></i> PLAY GAME
+            <!-- Companion Character Avatar & Dialogue -->
+            <div class="relative z-10 my-auto flex flex-col items-center">
+                <div id="companion-dialogue" class="bg-white/90 text-purple-900 font-bold font-fredoka text-xs px-4 py-2 rounded-2xl shadow-xl border-2 border-pink-400 mb-2 animate-bounce">
+                    Welcome to Candy Kingdom! 🍬
+                </div>
+                <div class="w-24 h-24 rounded-full bg-gradient-to-tr from-pink-400 to-purple-500 p-1 shadow-2xl border-4 border-white floating-candy-delayed">
+                    <div class="w-full h-full rounded-full bg-pink-300 flex items-center justify-center text-4xl text-white shadow-inner">
+                        🐱
+                    </div>
+                </div>
+            </div>
+
+            <!-- Home Action Buttons -->
+            <div class="w-full space-y-2 relative z-10 mb-2">
+                <button id="btn-play-main" class="w-full py-3.5 text-2xl font-black font-fredoka text-white uppercase tracking-wider rounded-2xl candy-btn flex items-center justify-center gap-3">
+                    <i class="fa-solid fa-play text-yellow-300"></i> PLAY SAGA
                 </button>
-                <div class="grid grid-cols-2 gap-3">
-                    <button id="btn-level-select" class="candy-btn-blue py-3 rounded-2xl font-fredoka text-lg text-white border-2 border-white/50 flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-map"></i> LEVELS
+                <div class="grid grid-cols-3 gap-2">
+                    <button id="btn-level-select" class="py-2.5 text-xs font-bold font-fredoka text-white rounded-xl candy-btn-blue flex items-center justify-center gap-1">
+                        <i class="fa-solid fa-map-location-dot"></i> MAP
                     </button>
-                    <button id="btn-open-settings" class="candy-btn-yellow py-3 rounded-2xl font-fredoka text-lg text-white border-2 border-white/50 flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-gear"></i> SETTINGS
+                    <button id="btn-daily-reward" class="py-2.5 text-xs font-bold font-fredoka text-white rounded-xl candy-btn-yellow flex items-center justify-center gap-1">
+                        <i class="fa-solid fa-gift"></i> REWARDS
+                    </button>
+                    <button id="btn-achievements" class="py-2.5 text-xs font-bold font-fredoka text-white rounded-xl candy-btn-green flex items-center justify-center gap-1">
+                        <i class="fa-solid fa-trophy"></i> BADGES
                     </button>
                 </div>
+            </div>
+
+            <!-- Bottom Control Bar -->
+            <div class="flex justify-between items-center w-full relative z-10 pt-2 border-t border-white/20">
+                <button id="btn-sound-toggle-home" class="w-10 h-10 rounded-2xl bg-white/20 backdrop-blur-md border border-white/40 text-white text-lg flex items-center justify-center active:scale-95 transition">
+                    <i class="fa-solid fa-volume-high"></i>
+                </button>
+                <div class="text-white text-[10px] font-semibold bg-black/30 px-3 py-1.5 rounded-full border border-white/20">
+                    BEST SCORE: <span id="home-best-score" class="text-yellow-300 font-bold font-fredoka text-xs">0</span>
+                </div>
+                <button id="btn-open-settings" class="w-10 h-10 rounded-2xl bg-white/20 backdrop-blur-md border border-white/40 text-white text-lg flex items-center justify-center active:scale-95 transition">
+                    <i class="fa-solid fa-gear"></i>
+                </button>
             </div>
         </div>
 
         <!-- SCREEN 2: LEVEL SELECT MAP -->
-        <div id="screen-level-select" class="hidden relative z-10 flex flex-col h-full p-4 text-center">
-            <!-- Header -->
-            <div class="flex items-center justify-between mb-4 bg-white/80 p-3 rounded-2xl border-2 border-white shadow">
-                <button id="btn-back-home-map" class="w-10 h-10 bg-pink-500 text-white rounded-full flex items-center justify-center shadow active:scale-95">
+        <div id="screen-level-select" class="hidden flex-1 flex flex-col justify-between p-0 relative z-20 overflow-hidden">
+            <!-- Map Sticky Top Navigation -->
+            <div class="absolute top-0 left-0 right-0 z-30 flex items-center justify-between bg-gradient-to-b from-purple-950/90 to-transparent p-3 backdrop-blur-sm">
+                <button id="btn-back-home-map" class="w-10 h-10 rounded-2xl bg-pink-500 text-white font-bold flex items-center justify-center shadow-lg border border-pink-300 active:scale-95 transition">
                     <i class="fa-solid fa-arrow-left"></i>
                 </button>
-                <h2 class="font-fredoka text-2xl text-pink-600">SELECT LEVEL</h2>
+                <div class="text-center">
+                    <h2 class="text-lg font-black font-fredoka text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-pink-300 uppercase tracking-wide drop-shadow">CANDY ADVENTURE ROAD</h2>
+                    <div class="text-[10px] text-yellow-200 font-bold uppercase tracking-wider">Level <span id="map-current-range">1 - 5000</span></div>
+                </div>
                 <div class="w-10"></div>
             </div>
 
-            <!-- Scrollable Level Grid -->
-            <div class="flex-1 overflow-y-auto no-scrollbar pr-1">
-                <div id="levels-grid" class="grid grid-cols-4 gap-3 py-2">
-                    <!-- Populated dynamically via JS -->
+            <!-- Vertically Scrolling 5,000 Level Adventure Map Track -->
+            <div id="map-scroll-container" class="flex-1 overflow-y-auto no-scrollbar relative w-full pt-16 pb-12 bg-gradient-to-b from-pink-900 via-indigo-950 to-purple-950">
+                <div id="adventure-map-content" class="relative w-full min-h-[275000px] flex justify-center">
+                    <!-- SVG Winding Path Background -->
+                    <svg id="map-svg-path" class="absolute inset-0 w-full h-full pointer-events-none" preserveAspectRatio="none">
+                        <!-- Curved S-Path rendered dynamically -->
+                    </svg>
+
+                    <!-- Virtualized Level Node Buttons Layered on Road -->
+                    <div id="level-nodes-layer" class="absolute inset-0 w-full h-full pointer-events-auto">
+                        <!-- Level Node Circles generated via JS -->
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- SCREEN 3: MAIN GAMEPLAY -->
-        <div id="screen-game" class="hidden relative z-10 flex flex-col justify-between h-full p-3">
-            <!-- Game Top Header Bar -->
-            <div class="glass-panel rounded-2xl p-3 flex justify-between items-center shadow-lg">
-                <button id="btn-pause-game" class="w-10 h-10 bg-yellow-400 text-white rounded-xl font-bold flex items-center justify-center border-2 border-white shadow active:scale-95">
-                    <i class="fa-solid fa-pause text-xl"></i>
-                </button>
-
-                <!-- Moves Left Display -->
-                <div class="flex flex-col items-center">
-                    <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">MOVES</span>
-                    <span id="game-moves" class="font-fredoka text-3xl text-pink-600 leading-none">25</span>
+        <!-- SCREEN 3: GAMEPLAY BOARD -->
+        <div id="screen-game" class="hidden flex-1 flex flex-col justify-between p-3 relative z-20">
+            <!-- Header Status Bar -->
+            <div class="bg-white/20 backdrop-blur-md p-2.5 rounded-2xl border border-white/30 flex justify-between items-center text-white">
+                <div class="flex items-center gap-2">
+                    <button id="btn-pause-game" class="w-9 h-9 rounded-xl bg-pink-500 flex items-center justify-center text-white font-bold shadow active:scale-95 transition">
+                        <i class="fa-solid fa-pause"></i>
+                    </button>
+                    <div>
+                        <div class="text-[10px] text-pink-200 uppercase font-bold">LEVEL <span id="game-level-num">1</span></div>
+                        <div class="text-xs font-black font-fredoka text-yellow-300" id="game-target-desc">GOAL: <span id="game-target">500</span></div>
+                    </div>
                 </div>
 
-                <!-- Level & Target Info -->
                 <div class="flex flex-col items-center">
-                    <span id="game-level-title" class="font-fredoka text-sm text-purple-700">LEVEL 1</span>
-                    <div class="text-xs font-bold text-gray-600">GOAL: <span id="game-target" class="text-indigo-600">500</span></div>
+                    <div class="text-[10px] text-pink-200 uppercase font-bold">MOVES LEFT</div>
+                    <div class="text-2xl font-black font-fredoka text-white animate-pulse" id="game-moves">25</div>
                 </div>
 
-                <!-- Current Score -->
                 <div class="flex flex-col items-end">
-                    <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">SCORE</span>
-                    <span id="game-score" class="font-fredoka text-2xl text-yellow-500 leading-none">0</span>
+                    <div class="text-[10px] text-pink-200 uppercase font-bold">SCORE</div>
+                    <div class="text-base font-black font-fredoka text-yellow-300" id="game-score">0</div>
                 </div>
             </div>
 
-            <!-- Progress Bar -->
-            <div class="w-full bg-white/60 h-4 rounded-full p-0.5 border border-white shadow-inner my-2 relative overflow-hidden">
-                <div id="game-progress-bar" class="bg-gradient-to-r from-yellow-400 to-green-400 h-full rounded-full transition-all duration-300 w-0"></div>
+            <!-- Goal Progress Bar -->
+            <div class="w-full bg-black/40 h-2.5 rounded-full overflow-hidden p-0.5 border border-white/30 my-1">
+                <div id="game-progress-bar" class="bg-gradient-to-r from-yellow-400 via-pink-400 to-emerald-400 h-full rounded-full transition-all duration-300 w-0 shadow-[0_0_8px_rgba(250,204,21,0.8)]"></div>
             </div>
 
-            <!-- Canvas Container -->
-            <div class="relative flex-1 flex items-center justify-center my-auto">
-                <div class="relative p-2 bg-white/40 backdrop-blur-md rounded-3xl border-4 border-white/80 shadow-2xl">
-                    <canvas id="game-canvas" class="rounded-2xl cursor-pointer touch-none"></canvas>
-                    
-                    <!-- Overlay Notification Text (Combos, Shuffles) -->
-                    <div id="canvas-overlay-text" class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-0 transition-opacity duration-300">
-                        <span class="font-fredoka text-4xl text-yellow-300 drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)] text-center px-4" id="overlay-msg-content">SHUFFLING!</span>
-                    </div>
-                </div>
+            <!-- Interactive 3D WebGL Canvas Board Container (9x9 Ratio) -->
+            <div id="board-container" class="relative my-auto flex items-center justify-center w-full aspect-square max-w-[360px] mx-auto p-2 bg-gradient-to-b from-purple-900/90 to-indigo-950/90 rounded-3xl border-4 border-white/40 shadow-[0_0_40px_rgba(236,72,153,0.5)] backdrop-blur-md overflow-hidden">
+                <!-- Three.js WebGL / High-End Canvas Viewport -->
+                <canvas id="game-canvas" class="w-full h-full rounded-2xl cursor-pointer relative z-0"></canvas>
             </div>
 
-            <!-- Bottom Control Controls -->
-            <div class="flex justify-between items-center px-2 py-1">
-                <button id="btn-restart-current" class="w-10 h-10 bg-white/80 rounded-full border-2 border-white text-purple-600 flex items-center justify-center shadow active:scale-95">
-                    <i class="fa-solid fa-rotate-right"></i>
-                </button>
-                <div class="text-xs font-bold text-white/90 drop-shadow">Match 3 candies in a row!</div>
-                <button id="btn-audio-in-game" class="w-10 h-10 bg-white/80 rounded-full border-2 border-white text-pink-500 flex items-center justify-center shadow active:scale-95">
-                    <i class="fa-solid fa-volume-high"></i>
-                </button>
-            </div>
-        </div>
-
-        <!-- MODAL 1: SETTINGS -->
-        <div id="modal-settings" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-            <div class="glass-panel w-full max-w-sm rounded-3xl p-6 flex flex-col gap-5 border-4 border-white shadow-2xl animate-fade-in">
-                <h3 class="font-fredoka text-3xl text-center text-pink-600">SETTINGS</h3>
-                
-                <div class="space-y-4">
-                    <div class="flex justify-between items-center bg-white/70 p-3 rounded-2xl">
-                        <span class="font-bold text-gray-700">Sound Effects</span>
-                        <button id="toggle-sfx" class="w-14 h-8 bg-green-500 rounded-full p-1 transition flex items-center">
-                            <div class="w-6 h-6 bg-white rounded-full shadow-md transform translate-x-6 transition"></div>
-                        </button>
+            <!-- Bottom Booster Toolbar -->
+            <div class="flex justify-around items-center bg-white/20 backdrop-blur-md p-2 rounded-2xl border border-white/30">
+                <button id="booster-hammer" class="flex flex-col items-center text-white active:scale-90 transition group">
+                    <div class="w-10 h-10 rounded-2xl bg-amber-500 border-2 border-yellow-200 flex items-center justify-center text-base shadow-lg group-hover:bg-amber-400">
+                        🔨
                     </div>
-
-                    <div class="flex justify-between items-center bg-white/70 p-3 rounded-2xl">
-                        <span class="font-bold text-gray-700">Background Music</span>
-                        <button id="toggle-bgm" class="w-14 h-8 bg-green-500 rounded-full p-1 transition flex items-center">
-                            <div class="w-6 h-6 bg-white rounded-full shadow-md transform translate-x-6 transition"></div>
-                        </button>
-                    </div>
-
-                    <div class="flex flex-col gap-1 bg-white/70 p-3 rounded-2xl">
-                        <div class="flex justify-between text-sm font-bold text-gray-700">
-                            <span>Volume</span>
-                            <span id="volume-label">80%</span>
-                        </div>
-                        <input id="slider-volume" type="range" min="0" max="100" value="80" class="w-full accent-pink-500 cursor-pointer">
-                    </div>
-                </div>
-
-                <button id="btn-reset-data" class="bg-red-100 border border-red-300 text-red-600 py-2 rounded-xl font-bold text-sm hover:bg-red-200 transition">
-                    <i class="fa-solid fa-trash"></i> Reset All Progress
+                    <span class="text-[9px] font-bold font-fredoka mt-1">HAMMER</span>
                 </button>
 
-                <button id="btn-close-settings" class="candy-btn py-3 rounded-2xl font-fredoka text-white text-xl border-2 border-white/50">
-                    CLOSE
+                <button id="booster-shuffle" class="flex flex-col items-center text-white active:scale-90 transition group">
+                    <div class="w-10 h-10 rounded-2xl bg-cyan-500 border-2 border-cyan-200 flex items-center justify-center text-base shadow-lg group-hover:bg-cyan-400">
+                        🔀
+                    </div>
+                    <span class="text-[9px] font-bold font-fredoka mt-1">SHUFFLE</span>
+                </button>
+
+                <button id="booster-moves" class="flex flex-col items-center text-white active:scale-90 transition group">
+                    <div class="w-10 h-10 rounded-2xl bg-emerald-500 border-2 border-emerald-200 flex items-center justify-center text-base shadow-lg group-hover:bg-emerald-400">
+                        ➕5
+                    </div>
+                    <span class="text-[9px] font-bold font-fredoka mt-1">+5 MOVES</span>
+                </button>
+
+                <button id="btn-audio-in-game" class="flex flex-col items-center text-white active:scale-90 transition group">
+                    <div class="w-10 h-10 rounded-2xl bg-purple-600 border-2 border-purple-300 flex items-center justify-center text-base shadow-lg group-hover:bg-purple-500">
+                        <i class="fa-solid fa-volume-high"></i>
+                    </div>
+                    <span class="text-[9px] font-bold font-fredoka mt-1">AUDIO</span>
                 </button>
             </div>
         </div>
+    </div>
 
-        <!-- MODAL 2: PAUSE MENU -->
-        <div id="modal-pause" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-            <div class="glass-panel w-full max-w-sm rounded-3xl p-6 flex flex-col gap-4 text-center border-4 border-white shadow-2xl">
-                <h3 class="font-fredoka text-4xl text-purple-600">PAUSED</h3>
-                
-                <div class="space-y-3 my-2">
-                    <button id="btn-resume-game" class="candy-btn-green w-full py-3 rounded-2xl font-fredoka text-white text-xl">
-                        RESUME
-                    </button>
-                    <button id="btn-restart-pause" class="candy-btn-yellow w-full py-3 rounded-2xl font-fredoka text-white text-xl">
-                        RESTART LEVEL
-                    </button>
-                    <button id="btn-exit-map" class="candy-btn-blue w-full py-3 rounded-2xl font-fredoka text-white text-xl">
-                        MAIN MENU
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- MODAL 3: WIN SCREEN -->
-        <div id="modal-win" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-md flex items-center justify-center p-4">
-            <div class="glass-panel w-full max-w-sm rounded-3xl p-6 flex flex-col items-center gap-3 text-center border-4 border-white shadow-2xl relative">
-                <!-- Stars Container -->
-                <div class="flex justify-center gap-2 -mt-12">
-                    <div id="star-1" class="text-5xl text-gray-300 transform -rotate-12 transition duration-500">★</div>
-                    <div id="star-2" class="text-6xl text-gray-300 transform -translate-y-2 transition duration-500">★</div>
-                    <div id="star-3" class="text-5xl text-gray-300 transform rotate-12 transition duration-500">★</div>
-                </div>
-
-                <h3 class="font-fredoka text-4xl text-yellow-500 drop-shadow">LEVEL PASSED!</h3>
-
-                <div class="w-full bg-white/80 rounded-2xl p-4 space-y-2 text-gray-700 my-2">
-                    <div class="flex justify-between font-bold">
-                        <span>Score:</span>
-                        <span id="win-score-val" class="text-pink-600 font-fredoka text-lg">0</span>
-                    </div>
-                    <div class="flex justify-between font-bold">
-                        <span>Moves Bonus:</span>
-                        <span id="win-bonus-val" class="text-green-600 font-fredoka text-lg">+0</span>
-                    </div>
-                    <hr class="border-gray-300">
-                    <div class="flex justify-between font-extrabold text-lg">
-                        <span>Total Score:</span>
-                        <span id="win-total-val" class="text-purple-600 font-fredoka text-xl">0</span>
+    <!-- MODAL: ACHIEVEMENTS -->
+    <div id="modal-achievements" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="w-full max-w-sm glass-panel p-5 rounded-3xl shadow-2xl text-purple-950 flex flex-col items-center">
+            <h3 class="text-2xl font-black font-fredoka text-pink-600 uppercase mb-3">BADGES & TROPHIES</h3>
+            
+            <div class="w-full space-y-2 mb-4 max-h-60 overflow-y-auto no-scrollbar">
+                <div class="flex items-center gap-3 bg-white/70 p-2.5 rounded-2xl border border-pink-200">
+                    <div class="text-3xl">🏆</div>
+                    <div>
+                        <div class="font-bold text-sm font-fredoka text-purple-900">Sweet Starter</div>
+                        <div class="text-xs text-purple-700">Clear Level 1 in Saga</div>
                     </div>
                 </div>
-
-                <div class="w-full space-y-3">
-                    <button id="btn-next-level" class="candy-btn-green w-full py-3 rounded-2xl font-fredoka text-white text-xl border-2 border-white/50">
-                        NEXT LEVEL
-                    </button>
-                    <div class="grid grid-cols-2 gap-3">
-                        <button id="btn-win-replay" class="candy-btn-yellow py-3 rounded-2xl font-fredoka text-white text-lg border-2 border-white/50">
-                            REPLAY
-                        </button>
-                        <button id="btn-win-home" class="candy-btn-blue py-3 rounded-2xl font-fredoka text-white text-lg border-2 border-white/50">
-                            HOME
-                        </button>
+                <div class="flex items-center gap-3 bg-white/70 p-2.5 rounded-2xl border border-pink-200">
+                    <div class="text-3xl">🌟</div>
+                    <div>
+                        <div class="font-bold text-sm font-fredoka text-purple-900">Star Collector</div>
+                        <div class="text-xs text-purple-700">Earn 3 stars on 5 levels</div>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3 bg-white/70 p-2.5 rounded-2xl border border-pink-200">
+                    <div class="text-3xl">🍬</div>
+                    <div>
+                        <div class="font-bold text-sm font-fredoka text-purple-900">Combo Master</div>
+                        <div class="text-xs text-purple-700">Trigger a 4-chain cascade</div>
                     </div>
                 </div>
             </div>
+
+            <button id="btn-close-achievements" class="w-full py-3 bg-pink-500 text-white font-black font-fredoka rounded-2xl candy-btn">
+                CLOSE
+            </button>
         </div>
+    </div>
 
-        <!-- MODAL 4: LOSE SCREEN -->
-        <div id="modal-lose" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-md flex items-center justify-center p-4">
-            <div class="glass-panel w-full max-w-sm rounded-3xl p-6 flex flex-col items-center gap-4 text-center border-4 border-white shadow-2xl">
-                <div class="text-6xl my-2">😭</div>
-                <h3 class="font-fredoka text-4xl text-red-500 drop-shadow">OUT OF MOVES!</h3>
-                <p class="text-gray-600 font-bold -mt-2">You didn't reach the target score in time.</p>
-
-                <div class="w-full bg-white/80 rounded-2xl p-4 space-y-2 text-gray-700">
-                    <div class="flex justify-between font-bold">
-                        <span>Target:</span>
-                        <span id="lose-target-val" class="text-indigo-600 font-fredoka">0</span>
-                    </div>
-                    <div class="flex justify-between font-bold">
-                        <span>Your Score:</span>
-                        <span id="lose-score-val" class="text-pink-600 font-fredoka">0</span>
-                    </div>
-                </div>
-
-                <div class="w-full space-y-3">
-                    <button id="btn-lose-retry" class="candy-btn-green w-full py-3 rounded-2xl font-fredoka text-white text-xl border-2 border-white/50">
-                        TRY AGAIN
-                    </button>
-                    <button id="btn-lose-home" class="candy-btn-blue w-full py-3 rounded-2xl font-fredoka text-white text-lg border-2 border-white/50">
-                        MAIN MENU
-                    </button>
-                </div>
+    <!-- MODAL: PAUSE -->
+    <div id="modal-pause" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="w-full max-w-sm glass-panel p-6 rounded-3xl shadow-2xl text-purple-950 flex flex-col items-center">
+            <h3 class="text-3xl font-black font-fredoka text-pink-600 uppercase mb-4">GAME PAUSED</h3>
+            
+            <div class="w-full space-y-3 mb-4">
+                <button id="btn-resume-game" class="w-full py-3 text-lg font-black font-fredoka text-white rounded-2xl candy-btn">
+                    RESUME
+                </button>
+                <button id="btn-restart-pause" class="w-full py-3 text-lg font-black font-fredoka text-white rounded-2xl candy-btn-yellow">
+                    RESTART
+                </button>
+                <button id="btn-exit-map" class="w-full py-3 text-lg font-black font-fredoka text-white rounded-2xl candy-btn-blue">
+                    EXIT TO MAP
+                </button>
             </div>
         </div>
+    </div>
 
+    <!-- MODAL: VICTORY -->
+    <div id="modal-win" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="w-full max-w-sm glass-panel p-6 rounded-3xl shadow-2xl text-purple-950 flex flex-col items-center text-center">
+            <div class="text-5xl animate-bounce mb-2">🎉</div>
+            <h3 class="text-3xl font-black font-fredoka text-emerald-600 uppercase">STAGE CLEARED!</h3>
+            <p class="text-sm font-semibold text-purple-700 mb-3">Sweet Victory!</p>
+
+            <div class="flex gap-2 text-3xl text-yellow-400 my-2">
+                <i class="fa-solid fa-star"></i>
+                <i class="fa-solid fa-star"></i>
+                <i class="fa-solid fa-star"></i>
+            </div>
+
+            <div class="bg-white/80 w-full py-3 rounded-2xl my-3 border border-pink-200">
+                <div class="text-xs text-gray-500 font-bold uppercase">FINAL SCORE</div>
+                <div id="win-final-score" class="text-3xl font-black font-fredoka text-pink-600">0</div>
+            </div>
+
+            <div class="w-full space-y-2">
+                <button id="btn-next-level" class="w-full py-3 text-xl font-black font-fredoka text-white rounded-2xl candy-btn-green">
+                    NEXT LEVEL
+                </button>
+                <button id="btn-win-replay" class="w-full py-3 text-lg font-black font-fredoka text-white rounded-2xl candy-btn-yellow">
+                    REPLAY
+                </button>
+                <button id="btn-win-home" class="w-full py-3 text-lg font-black font-fredoka text-white rounded-2xl candy-btn-blue">
+                    HOME
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: DEFEAT -->
+    <div id="modal-lose" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="w-full max-w-sm glass-panel p-6 rounded-3xl shadow-2xl text-purple-950 flex flex-col items-center text-center">
+            <div class="text-5xl mb-2">💔</div>
+            <h3 class="text-3xl font-black font-fredoka text-rose-600 uppercase">OUT OF MOVES!</h3>
+            <p class="text-sm font-semibold text-purple-700 mb-3">Don't give up! Try again.</p>
+
+            <div class="bg-white/80 w-full py-3 rounded-2xl my-3 border border-rose-200">
+                <div class="text-xs text-gray-500 font-bold uppercase">SCORE ACHIEVED</div>
+                <div id="lose-final-score" class="text-3xl font-black font-fredoka text-rose-600">0</div>
+            </div>
+
+            <div class="w-full space-y-2">
+                <button id="btn-lose-retry" class="w-full py-3 text-xl font-black font-fredoka text-white rounded-2xl candy-btn">
+                    TRY AGAIN
+                </button>
+                <button id="btn-lose-home" class="w-full py-3 text-lg font-black font-fredoka text-white rounded-2xl candy-btn-blue">
+                    HOME
+                </button>
+            </div>
+        </div>
     </div>
 
     <!-- JAVASCRIPT GAME LOGIC -->
     <script>
         /* ==========================================================================
-           1. AUDIO SYNTHESIZER (WEB AUDIO API - ZERO EXTERNAL MP3 DEPENDENCIES)
+           1. WEB AUDIO SYNTHESIZER (UPGRADED WITH FLUID WATER SOUNDS)
            ========================================================================== */
         class SoundEngine {
             constructor() {
                 this.ctx = null;
-                this.sfxEnabled = true;
-                this.bgmEnabled = true;
-                this.volume = 0.8;
-                this.bgmInterval = null;
+                this.muted = false;
             }
 
             init() {
                 if (!this.ctx) {
                     const AudioContext = window.AudioContext || window.webkitAudioContext;
-                    this.ctx = new AudioContext();
+                    if (AudioContext) this.ctx = new AudioContext();
                 }
-                if (this.ctx && this.ctx.state === 'suspended') {
-                    this.ctx.resume();
-                }
-            }
-
-            playTone(freq, type, duration, startVol = 1, endVol = 0.001) {
-                if (!this.sfxEnabled || !this.ctx) return;
-                try {
-                    const osc = this.ctx.createOscillator();
-                    const gain = this.ctx.createGain();
-                    osc.type = type;
-                    osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
-                    gain.gain.setValueAtTime(startVol * this.volume, this.ctx.currentTime);
-                    gain.gain.exponentialRampToValueAtTime(endVol, this.ctx.currentTime + duration);
-                    osc.connect(gain);
-                    gain.connect(this.ctx.destination);
-                    osc.start();
-                    osc.stop(this.ctx.currentTime + duration);
-                } catch(e) {}
             }
 
             playSwap() {
+                if (this.muted) return;
                 this.init();
-                this.playTone(400, 'sine', 0.08, 0.5);
-                setTimeout(() => this.playTone(600, 'sine', 0.08, 0.5), 50);
+                if (!this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(260, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(540, this.ctx.currentTime + 0.1);
+                gain.gain.setValueAtTime(0.35, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.1);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.1);
             }
 
             playMatch() {
+                if (this.muted) return;
                 this.init();
-                const notes = [523.25, 659.25, 783.99]; // C5, E5, G5
-                notes.forEach((freq, i) => {
-                    setTimeout(() => this.playTone(freq, 'triangle', 0.15, 0.6), i * 60);
+                if (!this.ctx) return;
+                const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+                notes.forEach((freq, idx) => {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(freq, this.ctx.currentTime + idx * 0.04);
+                    gain.gain.setValueAtTime(0.3, this.ctx.currentTime + idx * 0.04);
+                    gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + idx * 0.04 + 0.18);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start(this.ctx.currentTime + idx * 0.04);
+                    osc.stop(this.ctx.currentTime + idx * 0.04 + 0.18);
                 });
+            }
+
+            playExplosion() {
+                if (this.muted) return;
+                this.init();
+                if (!this.ctx) return;
+                // Fluid liquid splash noise synth
+                const bufferSize = this.ctx.sampleRate * 0.25;
+                const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) {
+                    data[i] = Math.random() * 2 - 1;
+                }
+                const noise = this.ctx.createBufferSource();
+                noise.buffer = buffer;
+                const filter = this.ctx.createBiquadFilter();
+                filter.type = 'lowpass';
+                filter.frequency.setValueAtTime(800, this.ctx.currentTime);
+                filter.frequency.exponentialRampToValueAtTime(120, this.ctx.currentTime + 0.25);
+                const gain = this.ctx.createGain();
+                gain.gain.setValueAtTime(0.5, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.25);
+                noise.connect(filter);
+                filter.connect(gain);
+                gain.connect(this.ctx.destination);
+                noise.start();
             }
 
             playSpecial() {
+                if (this.muted) return;
                 this.init();
-                this.playTone(300, 'sawtooth', 0.3, 0.7);
-                setTimeout(() => this.playTone(600, 'sawtooth', 0.3, 0.7), 80);
-                setTimeout(() => this.playTone(900, 'sine', 0.4, 0.8), 160);
-            }
-
-            playExplode() {
-                this.init();
-                if (!this.sfxEnabled || !this.ctx) return;
-                try {
-                    // Noise synth for boom
-                    const bufferSize = this.ctx.sampleRate * 0.3;
-                    const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
-                    const output = buffer.getChannelData(0);
-                    for (let i = 0; i < bufferSize; i++) {
-                        output[i] = Math.random() * 2 - 1;
-                    }
-                    const whiteNoise = this.ctx.createBufferSource();
-                    whiteNoise.buffer = buffer;
-                    const filter = this.ctx.createBiquadFilter();
-                    filter.type = 'lowpass';
-                    filter.frequency.setValueAtTime(800, this.ctx.currentTime);
-                    filter.frequency.exponentialRampToValueAtTime(50, this.ctx.currentTime + 0.3);
-                    const gain = this.ctx.createGain();
-                    gain.gain.setValueAtTime(this.volume, this.ctx.currentTime);
-                    gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.3);
-                    whiteNoise.connect(filter);
-                    filter.connect(gain);
-                    gain.connect(this.ctx.destination);
-                    whiteNoise.start();
-                } catch(e) {}
-            }
-
-            playWin() {
-                this.init();
-                const arpeggio = [523.25, 659.25, 783.99, 1046.50];
-                arpeggio.forEach((freq, i) => {
-                    setTimeout(() => this.playTone(freq, 'sine', 0.25, 0.7), i * 120);
-                });
-            }
-
-            playLose() {
-                this.init();
-                const notes = [400, 350, 300, 250];
-                notes.forEach((freq, i) => {
-                    setTimeout(() => this.playTone(freq, 'sawtooth', 0.2, 0.5), i * 150);
-                });
+                if (!this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(350, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(1100, this.ctx.currentTime + 0.35);
+                gain.gain.setValueAtTime(0.4, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.35);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.35);
             }
 
             playClick() {
+                if (this.muted) return;
                 this.init();
-                this.playTone(800, 'sine', 0.04, 0.3);
-            }
-
-            startBGM() {
-                if (this.bgmInterval || !this.bgmEnabled) return;
-                let step = 0;
-                const melody = [261.63, 329.63, 392.00, 329.63, 293.66, 349.23, 440.00, 349.23];
-                this.bgmInterval = setInterval(() => {
-                    if (this.bgmEnabled && this.ctx) {
-                        this.playTone(melody[step % melody.length], 'sine', 0.2, 0.15, 0.01);
-                        step++;
-                    }
-                }, 400);
-            }
-
-            stopBGM() {
-                if (this.bgmInterval) {
-                    clearInterval(this.bgmInterval);
-                    this.bgmInterval = null;
-                }
+                if (!this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(650, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(450, this.ctx.currentTime + 0.04);
+                gain.gain.setValueAtTime(0.25, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.04);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.04);
             }
         }
 
         const sound = new SoundEngine();
 
-        /* ==========================================================================
-           2. LEVEL DEFINITIONS & GAME DATA
-           ========================================================================== */
-        const TOTAL_LEVELS = 20;
-        const LEVEL_CONFIGS = Array.from({ length: TOTAL_LEVELS }, (_, i) => {
-            const levelNum = i + 1;
-            return {
-                level: levelNum,
-                targetScore: 400 + i * 350 + Math.floor(i * i * 30),
-                moves: Math.max(15, 28 - Math.floor(i * 0.6)),
-                candiesCount: i < 5 ? 5 : 6 // 5 candy types for early levels, 6 later
-            };
-        });
+        function bindClick(id, handler) {
+            const el = document.getElementById(id);
+            if (el) el.onclick = handler;
+        }
 
-        // Candy Colors & Render Types
-        // Types: 0: Red Jelly, 1: Blue Diamond, 2: Green Sugar, 3: Yellow Star, 4: Purple Lollipop, 5: Orange Orb
+        /* ==========================================================================
+           2. 3D GELATIN SHADER & CANDY DEFINITIONS
+           ========================================================================== */
+        const BOARD_SIZE = 9;
+        const TOTAL_LEVELS = 5000;
+        const LEVEL_HEIGHT_STEP = 55;
+
         const CANDY_TYPES = [
-            { name: 'Red Jelly', color: '#ff3b5c', highlight: '#ff9ebb' },
-            { name: 'Blue Diamond', color: '#00d2ff', highlight: '#99f0ff' },
-            { name: 'Green Sugar', color: '#2ecc71', highlight: '#a3e9be' },
-            { name: 'Yellow Star', color: '#f1c40f', highlight: '#fef1b7' },
-            { name: 'Purple Lollipop', color: '#9b59b6', highlight: '#e8c5f5' },
-            { name: 'Orange Orb', color: '#e67e22', highlight: '#f8c49c' }
+            { id: 0, name: 'Ruby Jelly', main: '#ef4444', light: '#fca5a5', dark: '#881337', gelGlow: '#f43f5e', shape: 'bean', roughness: 0.1, transmission: 0.85 },
+            { id: 1, name: 'Ocean Diamond', main: '#3b82f6', light: '#93c5fd', dark: '#1e3a8a', gelGlow: '#60a5fa', shape: 'diamond', roughness: 0.08, transmission: 0.9 },
+            { id: 2, name: 'Emerald Gummy', main: '#10b981', light: '#6ee7b7', dark: '#064e3b', gelGlow: '#34d399', shape: 'square', roughness: 0.12, transmission: 0.8 },
+            { id: 3, name: 'Golden Lemon', main: '#f59e0b', light: '#fde047', dark: '#78350f', gelGlow: '#fbbf24', shape: 'triangle', roughness: 0.1, transmission: 0.85 },
+            { id: 4, name: 'Purple Grape', main: '#a855f7', light: '#e9d5ff', dark: '#4c1d95', gelGlow: '#c084fc', shape: 'cluster', roughness: 0.1, transmission: 0.85 },
+            { id: 5, name: 'Tangerine Oval', main: '#f97316', light: '#fed7aa', dark: '#7c2d12', gelGlow: '#fb923c', shape: 'oval', roughness: 0.1, transmission: 0.85 }
         ];
 
+        function getLevelConfig(levelNum) {
+            const index = levelNum - 1;
+            return {
+                level: levelNum,
+                targetScore: 500 + index * 350 + Math.floor(Math.pow(index, 1.15) * 10),
+                moves: Math.max(12, 28 - Math.floor(index * 0.01)),
+                candiesCount: levelNum < 5 ? 5 : 6
+            };
+        }
+
         /* ==========================================================================
-           3. GAME ENGINE & STATE MANAGEMENT
+           3. 3D WEBGL JELLY RENDERER & GAME ENGINE
            ========================================================================== */
         class CandyBlastGame {
             constructor() {
-                this.gridSize = 8;
-                this.board = [];
                 this.currentLevel = 1;
                 this.score = 0;
-                this.movesLeft = 0;
-                this.targetScore = 0;
-                this.isAnimating = false;
+                this.movesLeft = 25;
+                this.targetScore = 500;
+                this.highScore = parseInt(localStorage.getItem('candy_high_score') || '0', 10);
+                this.unlockedLevel = parseInt(localStorage.getItem('candy_unlocked_level') || '1', 10);
+
+                this.board = [];
+                this.canvas = null;
+                this.ctx = null;
+                this.tileSize = 40;
+
                 this.selectedTile = null;
-
-                // Canvas DOM
-                this.canvas = document.getElementById('game-canvas');
-                this.ctx = this.canvas.getContext('2d');
-                this.tileSize = 0;
-
-                // Touch & Drag state
-                this.dragStartTile = null;
-                this.touchStartX = 0;
-                this.touchStartY = 0;
-
-                // Animations & Visual effects queues
+                this.isAnimating = false;
                 this.particles = [];
-                this.floatingTexts = [];
-                this.animatingTiles = []; // Smooth falls / swaps
-
-                // Player Progress (LocalStorage)
-                this.progress = this.loadProgress();
+                this.ripples = [];
+                this.underwaterBubbles = [];
+                this.bgFish = [];
+                this.activeBooster = null;
+                this.animFrameId = null;
 
                 this.initUI();
-                this.setupCanvas();
-                this.renderLevelMap();
-                this.showScreen('screen-home');
-            }
-
-            loadProgress() {
-                const saved = localStorage.getItem('candy_blast_progress');
-                if (saved) {
-                    try { return JSON.parse(saved); } catch(e){}
-                }
-                return { unlockedLevel: 1, stars: {}, bestScore: 0 };
-            }
-
-            saveProgress() {
-                localStorage.setItem('candy_blast_progress', JSON.stringify(this.progress));
-            }
-
-            /* ----------------------------------------------------------------------
-               UI & Event Listeners setup
-               ---------------------------------------------------------------------- */
-            initUI() {
-                // Home Buttons
-                document.getElementById('btn-play-main').onclick = () => {
-                    sound.playClick();
-                    this.startLevel(this.progress.unlockedLevel);
-                };
-                document.getElementById('btn-level-select').onclick = () => {
-                    sound.playClick();
-                    this.showScreen('screen-level-select');
-                };
-                document.getElementById('btn-open-settings').onclick = () => {
-                    sound.playClick();
-                    document.getElementById('modal-settings').classList.remove('hidden');
-                };
-                document.getElementById('btn-close-settings').onclick = () => {
-                    sound.playClick();
-                    document.getElementById('modal-settings').classList.add('hidden');
-                };
-                document.getElementById('btn-back-home-map').onclick = () => {
-                    sound.playClick();
-                    this.showScreen('screen-home');
-                };
-
-                // Sound Toggles
-                const updateSoundIcon = (btnId) => {
-                    const icon = document.querySelector(`#${btnId} i`);
-                    if (icon) {
-                        icon.className = sound.sfxEnabled ? 'fa-solid fa-volume-high' : 'fa-solid fa-volume-xmark';
-                    }
-                };
-                const toggleAudioAll = () => {
-                    sound.sfxEnabled = !sound.sfxEnabled;
-                    sound.bgmEnabled = sound.sfxEnabled;
-                    if (sound.bgmEnabled) sound.startBGM(); else sound.stopBGM();
-                    updateSoundIcon('btn-sound-toggle-home');
-                    updateSoundIcon('btn-audio-in-game');
-                };
-                document.getElementById('btn-sound-toggle-home').onclick = () => { sound.playClick(); toggleAudioAll(); };
-                document.getElementById('btn-audio-in-game').onclick = () => { sound.playClick(); toggleAudioAll(); };
-
-                // Settings Controls
-                const sfxToggle = document.getElementById('toggle-sfx');
-                const bgmToggle = document.getElementById('toggle-bgm');
-                const volumeSlider = document.getElementById('slider-volume');
-
-                sfxToggle.onclick = () => {
-                    sound.sfxEnabled = !sound.sfxEnabled;
-                    sfxToggle.className = `w-14 h-8 rounded-full p-1 transition flex items-center ${sound.sfxEnabled ? 'bg-green-500' : 'bg-gray-400'}`;
-                    sfxToggle.children[0].className = `w-6 h-6 bg-white rounded-full shadow-md transform transition ${sound.sfxEnabled ? 'translate-x-6' : 'translate-x-0'}`;
-                    updateSoundIcon('btn-sound-toggle-home');
-                    updateSoundIcon('btn-audio-in-game');
-                };
-                bgmToggle.onclick = () => {
-                    sound.bgmEnabled = !sound.bgmEnabled;
-                    bgmToggle.className = `w-14 h-8 rounded-full p-1 transition flex items-center ${sound.bgmEnabled ? 'bg-green-500' : 'bg-gray-400'}`;
-                    bgmToggle.children[0].className = `w-6 h-6 bg-white rounded-full shadow-md transform transition ${sound.bgmEnabled ? 'translate-x-6' : 'translate-x-0'}`;
-                    if (sound.bgmEnabled) sound.startBGM(); else sound.stopBGM();
-                };
-                volumeSlider.oninput = (e) => {
-                    sound.volume = e.target.value / 100;
-                    document.getElementById('volume-label').innerText = `${e.target.value}%`;
-                };
-                document.getElementById('btn-reset-data').onclick = () => {
-                    if (confirm("Reset all unlocked levels and high scores?")) {
-                        localStorage.removeItem('candy_blast_progress');
-                        this.progress = { unlockedLevel: 1, stars: {}, bestScore: 0 };
-                        this.renderLevelMap();
-                        this.updateHomeBestScore();
-                        document.getElementById('modal-settings').classList.add('hidden');
-                    }
-                };
-
-                // In-Game Buttons
-                document.getElementById('btn-pause-game').onclick = () => {
-                    sound.playClick();
-                    document.getElementById('modal-pause').classList.remove('hidden');
-                };
-                document.getElementById('btn-resume-game').onclick = () => {
-                    sound.playClick();
-                    document.getElementById('modal-pause').classList.add('hidden');
-                };
-                document.getElementById('btn-restart-current').onclick = () => {
-                    sound.playClick();
-                    this.startLevel(this.currentLevel);
-                };
-                document.getElementById('btn-restart-pause').onclick = () => {
-                    sound.playClick();
-                    document.getElementById('modal-pause').classList.add('hidden');
-                    this.startLevel(this.currentLevel);
-                };
-                document.getElementById('btn-exit-map').onclick = () => {
-                    sound.playClick();
-                    document.getElementById('modal-pause').classList.add('hidden');
-                    this.showScreen('screen-level-select');
-                };
-
-                // Win Modal Actions
-                document.getElementById('btn-next-level').onclick = () => {
-                    sound.playClick();
-                    document.getElementById('modal-win').classList.add('hidden');
-                    this.startLevel(Math.min(TOTAL_LEVELS, this.currentLevel + 1));
-                };
-                document.getElementById('btn-win-replay').onclick = () => {
-                    sound.playClick();
-                    document.getElementById('modal-win').classList.add('hidden');
-                    this.startLevel(this.currentLevel);
-                };
-                document.getElementById('btn-win-home').onclick = () => {
-                    sound.playClick();
-                    document.getElementById('modal-win').classList.add('hidden');
-                    this.showScreen('screen-home');
-                };
-
-                // Lose Modal Actions
-                document.getElementById('btn-lose-retry').onclick = () => {
-                    sound.playClick();
-                    document.getElementById('modal-lose').classList.add('hidden');
-                    this.startLevel(this.currentLevel);
-                };
-                document.getElementById('btn-lose-home').onclick = () => {
-                    sound.playClick();
-                    document.getElementById('modal-lose').classList.add('hidden');
-                    this.showScreen('screen-home');
-                };
-
-                // Window Resize handling
-                window.addEventListener('resize', () => this.setupCanvas());
-
+                this.setupMapScrollListener();
                 this.updateHomeBestScore();
+                this.initUnderwaterWorld();
             }
 
-            updateHomeBestScore() {
-                document.getElementById('home-best-score').innerText = this.progress.bestScore || 0;
+            initUnderwaterWorld() {
+                this.underwaterBubbles = Array.from({ length: 30 }, () => ({
+                    x: Math.random() * 360,
+                    y: Math.random() * 360,
+                    r: Math.random() * 3.5 + 1,
+                    vy: Math.random() * 0.7 + 0.3,
+                    wobble: Math.random() * Math.PI * 2
+                }));
+
+                this.bgFish = [
+                    { x: -40, y: 70, speed: 0.7, size: 14, color: '#f43f5e', tailPhase: 0 },
+                    { x: 380, y: 240, speed: -0.5, size: 12, color: '#fbbf24', tailPhase: 2 }
+                ];
             }
 
-            showScreen(screenId) {
-                ['screen-home', 'screen-level-select', 'screen-game'].forEach(id => {
-                    document.getElementById(id).classList.add('hidden');
+            initUI() {
+                bindClick('btn-start-splash', () => {
+                    sound.playClick();
+                    const splash = document.getElementById('screen-splash');
+                    if (splash) splash.classList.add('hidden');
                 });
-                document.getElementById(screenId).classList.remove('hidden');
+
+                bindClick('btn-play-main', () => {
+                    sound.playClick();
+                    this.startLevel(this.unlockedLevel);
+                });
+
+                bindClick('btn-level-select', () => {
+                    sound.playClick();
+                    this.switchScreen('screen-level-select');
+                });
+
+                bindClick('btn-back-home-map', () => {
+                    sound.playClick();
+                    this.switchScreen('screen-home');
+                });
+
+                bindClick('btn-achievements', () => {
+                    sound.playClick();
+                    const modal = document.getElementById('modal-achievements');
+                    if (modal) modal.classList.remove('hidden');
+                });
+
+                bindClick('btn-close-achievements', () => {
+                    sound.playClick();
+                    const modal = document.getElementById('modal-achievements');
+                    if (modal) modal.classList.add('hidden');
+                });
+
+                bindClick('btn-sound-toggle-home', () => {
+                    sound.muted = !sound.muted;
+                    const btn = document.getElementById('btn-sound-toggle-home');
+                    if (btn) {
+                        btn.innerHTML = sound.muted ? '<i class="fa-solid fa-volume-xmark"></i>' : '<i class="fa-solid fa-volume-high"></i>';
+                    }
+                });
+
+                bindClick('btn-audio-in-game', () => {
+                    sound.muted = !sound.muted;
+                    const btn = document.getElementById('btn-audio-in-game');
+                    if (btn) {
+                        btn.innerHTML = sound.muted ? 
+                            '<div class="w-10 h-10 rounded-2xl bg-gray-600 border-2 border-gray-300 flex items-center justify-center text-base shadow-lg"><i class="fa-solid fa-volume-xmark"></i></div><span class="text-[9px] font-bold font-fredoka mt-1">MUTED</span>' :
+                            '<div class="w-10 h-10 rounded-2xl bg-purple-600 border-2 border-purple-300 flex items-center justify-center text-base shadow-lg"><i class="fa-solid fa-volume-high"></i></div><span class="text-[9px] font-bold font-fredoka mt-1">AUDIO</span>';
+                    }
+                });
+
+                bindClick('booster-hammer', () => {
+                    sound.playClick();
+                    this.activeBooster = this.activeBooster === 'hammer' ? null : 'hammer';
+                    const container = document.getElementById('board-container');
+                    if (container) {
+                        if (this.activeBooster === 'hammer') {
+                            container.classList.add('ring-4', 'ring-yellow-400', 'animate-pulse');
+                        } else {
+                            container.classList.remove('ring-4', 'ring-yellow-400', 'animate-pulse');
+                        }
+                    }
+                });
+
+                bindClick('booster-shuffle', () => {
+                    sound.playClick();
+                    this.shuffleBoard();
+                    sound.playSpecial();
+                });
+
+                bindClick('booster-moves', () => {
+                    sound.playClick();
+                    this.movesLeft += 5;
+                    this.updateUIHeader();
+                    sound.playSpecial();
+                });
+
+                bindClick('btn-daily-reward', () => {
+                    sound.playClick();
+                    alert("Daily Reward Claimed: +100 Coins & Free Shuffle Booster! 🎉");
+                });
+
+                bindClick('btn-pause-game', () => {
+                    sound.playClick();
+                    const modal = document.getElementById('modal-pause');
+                    if (modal) modal.classList.remove('hidden');
+                });
+
+                bindClick('btn-resume-game', () => {
+                    sound.playClick();
+                    const modal = document.getElementById('modal-pause');
+                    if (modal) modal.classList.add('hidden');
+                });
+
+                bindClick('btn-restart-pause', () => {
+                    sound.playClick();
+                    const modal = document.getElementById('modal-pause');
+                    if (modal) modal.classList.add('hidden');
+                    this.startLevel(this.currentLevel);
+                });
+
+                bindClick('btn-exit-map', () => {
+                    sound.playClick();
+                    const modal = document.getElementById('modal-pause');
+                    if (modal) modal.classList.add('hidden');
+                    this.switchScreen('screen-level-select');
+                });
+
+                bindClick('btn-next-level', () => {
+                    sound.playClick();
+                    const modal = document.getElementById('modal-win');
+                    if (modal) modal.classList.add('hidden');
+                    this.startLevel(Math.min(TOTAL_LEVELS, this.currentLevel + 1));
+                });
+
+                bindClick('btn-win-replay', () => {
+                    sound.playClick();
+                    const modal = document.getElementById('modal-win');
+                    if (modal) modal.classList.add('hidden');
+                    this.startLevel(this.currentLevel);
+                });
+
+                bindClick('btn-win-home', () => {
+                    sound.playClick();
+                    const modal = document.getElementById('modal-win');
+                    if (modal) modal.classList.add('hidden');
+                    this.switchScreen('screen-home');
+                });
+
+                bindClick('btn-lose-retry', () => {
+                    sound.playClick();
+                    const modal = document.getElementById('modal-lose');
+                    if (modal) modal.classList.add('hidden');
+                    this.startLevel(this.currentLevel);
+                });
+
+                bindClick('btn-lose-home', () => {
+                    sound.playClick();
+                    const modal = document.getElementById('modal-lose');
+                    if (modal) modal.classList.add('hidden');
+                    this.switchScreen('screen-home');
+                });
+            }
+
+            switchScreen(screenId) {
+                ['screen-home', 'screen-level-select', 'screen-game'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.classList.add('hidden');
+                });
+                const active = document.getElementById(screenId);
+                if (active) active.classList.remove('hidden');
 
                 if (screenId === 'screen-game') {
                     this.setupCanvas();
-                    sound.startBGM();
                 } else if (screenId === 'screen-level-select') {
-                    this.renderLevelMap();
+                    if (this.animFrameId) cancelAnimationFrame(this.animFrameId);
+                    this.renderLevelMapViewport();
+                    this.scrollToCurrentLevel();
+                } else {
+                    if (this.animFrameId) cancelAnimationFrame(this.animFrameId);
                 }
             }
 
-            renderLevelMap() {
-                const grid = document.getElementById('levels-grid');
-                grid.innerHTML = '';
-                for (let i = 1; i <= TOTAL_LEVELS; i++) {
-                    const isUnlocked = i <= this.progress.unlockedLevel;
-                    const stars = this.progress.stars[i] || 0;
-                    
-                    const btn = document.createElement('button');
-                    btn.className = `aspect-square rounded-2xl flex flex-col items-center justify-center p-2 font-fredoka shadow-md transition-all border-2 border-white/60 ${
-                        isUnlocked ? 'bg-gradient-to-b from-yellow-300 to-pink-400 text-white active:scale-95 cursor-pointer' : 'bg-gray-300 text-gray-500 cursor-not-allowed opacity-80'
-                    }`;
+            updateHomeBestScore() {
+                const el = document.getElementById('home-best-score');
+                if (el) el.innerText = this.highScore;
+            }
 
-                    if (isUnlocked) {
-                        btn.onclick = () => {
-                            sound.playClick();
-                            this.startLevel(i);
-                        };
-                        btn.innerHTML = `
-                            <span class="text-xl drop-shadow">${i}</span>
-                            <div class="text-xs tracking-tighter text-yellow-200">
-                                ${'★'.repeat(stars)}${'☆'.repeat(3 - stars)}
+            /* ==========================================================================
+               MAP ENGINE & UTILITIES
+               ========================================================================== */
+            getMapPoint(levelIndex) {
+                const width = 360;
+                const totalHeight = TOTAL_LEVELS * LEVEL_HEIGHT_STEP + 160;
+                const y = totalHeight - 90 - (levelIndex * LEVEL_HEIGHT_STEP);
+                const wave = Math.sin(levelIndex * 0.45);
+                const x = (width / 2) + wave * 100;
+                return { level: levelIndex + 1, x, y };
+            }
+
+            setupMapScrollListener() {
+                const container = document.getElementById('map-scroll-container');
+                if (!container) return;
+
+                let scrollTimeout;
+                container.onscroll = () => {
+                    clearTimeout(scrollTimeout);
+                    scrollTimeout = setTimeout(() => {
+                        this.renderLevelMapViewport();
+                    }, 16);
+                };
+            }
+
+            scrollToCurrentLevel() {
+                const container = document.getElementById('map-scroll-container');
+                if (!container) return;
+
+                const pt = this.getMapPoint(this.unlockedLevel - 1);
+                setTimeout(() => {
+                    const targetY = pt.y - (container.clientHeight / 2);
+                    container.scrollTo({ top: Math.max(0, targetY), behavior: 'smooth' });
+                }, 100);
+            }
+
+            renderLevelMapViewport() {
+                const container = document.getElementById('map-scroll-container');
+                const layer = document.getElementById('level-nodes-layer');
+                const svgPath = document.getElementById('map-svg-path');
+                const mapContent = document.getElementById('adventure-map-content');
+
+                if (!container || !layer || !svgPath || !mapContent) return;
+
+                const width = 360;
+                const totalHeight = TOTAL_LEVELS * LEVEL_HEIGHT_STEP + 160;
+                mapContent.style.height = `${totalHeight}px`;
+
+                const scrollTop = container.scrollTop;
+                const viewHeight = container.clientHeight || 700;
+
+                const minIndex = Math.max(0, Math.floor((totalHeight - scrollTop - viewHeight - 200) / LEVEL_HEIGHT_STEP));
+                const maxIndex = Math.min(TOTAL_LEVELS - 1, Math.ceil((totalHeight - scrollTop + 200) / LEVEL_HEIGHT_STEP));
+
+                layer.innerHTML = '';
+
+                const pathPoints = [];
+                const svgBufferMin = Math.max(0, minIndex - 10);
+                const svgBufferMax = Math.min(TOTAL_LEVELS - 1, maxIndex + 10);
+
+                for (let i = svgBufferMin; i <= svgBufferMax; i++) {
+                    pathPoints.push(this.getMapPoint(i));
+                }
+
+                if (pathPoints.length > 1) {
+                    let pathD = `M ${pathPoints[0].x} ${pathPoints[0].y}`;
+                    for (let i = 1; i < pathPoints.length; i++) {
+                        const pPrev = pathPoints[i - 1];
+                        const pCurr = pathPoints[i];
+                        const midY = (pPrev.y + pCurr.y) / 2;
+                        pathD += ` C ${pPrev.x} ${midY}, ${pCurr.x} ${midY}, ${pCurr.x} ${pCurr.y}`;
+                    }
+
+                    svgPath.setAttribute('viewBox', `0 0 ${width} ${totalHeight}`);
+                    svgPath.innerHTML = `
+                        <path d="${pathD}" stroke="rgba(255, 255, 255, 0.25)" stroke-width="26" stroke-linecap="round" fill="none"/>
+                        <path d="${pathD}" stroke="#fbbf24" stroke-width="14" stroke-linecap="round" stroke-dasharray="12 8" fill="none"/>
+                        <path d="${pathD}" stroke="#ec4899" stroke-width="4" stroke-linecap="round" fill="none"/>
+                    `;
+                }
+
+                for (let i = minIndex; i <= maxIndex; i++) {
+                    const pt = this.getMapPoint(i);
+                    const isUnlocked = pt.level <= this.unlockedLevel;
+                    const isCurrent = pt.level === this.unlockedLevel;
+
+                    const node = document.createElement('div');
+                    node.style.left = `${pt.x - 24}px`;
+                    node.style.top = `${pt.y - 24}px`;
+                    node.className = 'absolute w-12 h-12 flex flex-col items-center justify-center transition-transform duration-200 active:scale-90';
+
+                    const starScore = localStorage.getItem(`candy_stars_lvl_${pt.level}`) || (isUnlocked && pt.level < this.unlockedLevel ? '3' : '0');
+                    const starsCount = parseInt(starScore, 10);
+                    const starsHTML = isUnlocked && starsCount > 0 
+                        ? `<div class="absolute -bottom-3 flex gap-0.5 text-[8px] text-yellow-300 drop-shadow">${'★'.repeat(starsCount)}</div>`
+                        : '';
+
+                    const candyStyleIndex = (pt.level - 1) % CANDY_TYPES.length;
+                    const cInfo = CANDY_TYPES[candyStyleIndex];
+
+                    if (isCurrent) {
+                        node.innerHTML = `
+                            <div class="relative w-14 h-14 rounded-full bg-gradient-to-tr from-amber-400 via-yellow-300 to-amber-500 border-4 border-white flex items-center justify-center font-black font-fredoka text-purple-950 text-base shadow-2xl current-level-pulse cursor-pointer">
+                                <span>${pt.level}</span>
+                                <div class="absolute -top-5 text-xl animate-bounce">🐱</div>
                             </div>
+                            ${starsHTML}
+                        `;
+                    } else if (isUnlocked) {
+                        node.innerHTML = `
+                            <div class="w-12 h-12 rounded-full border-2 border-white flex items-center justify-center font-black font-fredoka text-white text-xs shadow-lg cursor-pointer hover:brightness-110" style="background: linear-gradient(180deg, ${cInfo.light} 0%, ${cInfo.main} 60%, ${cInfo.dark} 100%);">
+                                <span>${pt.level}</span>
+                            </div>
+                            ${starsHTML}
                         `;
                     } else {
-                        btn.innerHTML = `<i class="fa-solid fa-lock text-xl"></i>`;
+                        node.innerHTML = `
+                            <div class="w-10 h-10 rounded-full bg-purple-950/70 border-2 border-purple-400/40 flex items-center justify-center font-bold font-fredoka text-purple-300 text-[10px] shadow opacity-80">
+                                <span>${pt.level}</span>
+                            </div>
+                        `;
                     }
-                    grid.appendChild(btn);
+
+                    if (isUnlocked) {
+                        node.onclick = () => {
+                            sound.playClick();
+                            this.startLevel(pt.level);
+                        };
+                    }
+
+                    layer.appendChild(node);
+                }
+
+                const rangeEl = document.getElementById('map-current-range');
+                if (rangeEl) {
+                    rangeEl.innerText = `${minIndex + 1} - ${Math.min(TOTAL_LEVELS, maxIndex + 1)}`;
                 }
             }
 
-            /* ----------------------------------------------------------------------
-               4. CANVAS SETUP & TOUCH INTERACTION
-               ---------------------------------------------------------------------- */
-            setupCanvas() {
-                const container = this.canvas.parentElement;
-                const size = Math.min(container.clientWidth - 16, container.clientHeight - 16, 420);
-                this.canvas.width = size;
-                this.canvas.height = size;
-                this.tileSize = size / this.gridSize;
-
-                // Event Listeners for Interaction
-                this.canvas.onmousedown = (e) => this.handlePointerDown(e);
-                this.canvas.onmousemove = (e) => this.handlePointerMove(e);
-                this.canvas.onmouseup = () => this.handlePointerUp();
-
-                this.canvas.ontouchstart = (e) => {
-                    if (e.touches.length === 1) {
-                        const touch = e.touches[0];
-                        this.handlePointerDown(touch);
-                    }
-                };
-                this.canvas.ontouchmove = (e) => {
-                    if (e.touches.length === 1) {
-                        const touch = e.touches[0];
-                        this.handlePointerMove(touch);
-                    }
-                };
-                this.canvas.ontouchend = () => this.handlePointerUp();
-            }
-
-            getCanvasCoords(e) {
-                const rect = this.canvas.getBoundingClientRect();
-                return {
-                    x: e.clientX - rect.left,
-                    y: e.clientY - rect.top
-                };
-            }
-
-            getTileCoords(x, y) {
-                const col = Math.floor(x / this.tileSize);
-                const row = Math.floor(y / this.tileSize);
-                if (row >= 0 && row < this.gridSize && col >= 0 && col < this.gridSize) {
-                    return { r: row, c: col };
-                }
-                return null;
-            }
-
-            handlePointerDown(e) {
-                if (this.isAnimating || this.movesLeft <= 0) return;
-                const coords = this.getCanvasCoords(e);
-                const tile = this.getTileCoords(coords.x, coords.y);
-                if (!tile) return;
-
-                this.touchStartX = coords.x;
-                this.touchStartY = coords.y;
-                this.dragStartTile = tile;
-
-                if (!this.selectedTile) {
-                    this.selectedTile = tile;
-                } else {
-                    // Check if clicked adjacent tile
-                    const dR = Math.abs(this.selectedTile.r - tile.r);
-                    const dC = Math.abs(this.selectedTile.c - tile.c);
-                    if ((dR === 1 && dC === 0) || (dR === 0 && dC === 1)) {
-                        this.trySwap(this.selectedTile, tile);
-                        this.selectedTile = null;
-                    } else {
-                        this.selectedTile = tile;
-                    }
-                }
-                this.drawBoard();
-            }
-
-            handlePointerMove(e) {
-                if (!this.dragStartTile || this.isAnimating) return;
-                const coords = this.getCanvasCoords(e);
-                const dx = coords.x - this.touchStartX;
-                const dy = coords.y - this.touchStartY;
-
-                // Min drag threshold (20px)
-                if (Math.abs(dx) > 20 || Math.abs(dy) > 20) {
-                    let targetR = this.dragStartTile.r;
-                    let targetC = this.dragStartTile.c;
-
-                    if (Math.abs(dx) > Math.abs(dy)) {
-                        targetC += dx > 0 ? 1 : -1;
-                    } else {
-                        targetR += dy > 0 ? 1 : -1;
-                    }
-
-                    if (targetR >= 0 && targetR < this.gridSize && targetC >= 0 && targetC < this.gridSize) {
-                        this.trySwap(this.dragStartTile, { r: targetR, c: targetC });
-                    }
-                    this.dragStartTile = null;
-                    this.selectedTile = null;
-                }
-            }
-
-            handlePointerUp() {
-                this.dragStartTile = null;
-            }
-
-            /* ----------------------------------------------------------------------
-               5. LEVEL INITIALIZATION & MATCHING LOGIC
-               ---------------------------------------------------------------------- */
+            /* ==========================================================================
+               GAMEPLAY CORE & CANVAS LOOP
+               ========================================================================== */
             startLevel(levelNum) {
                 this.currentLevel = levelNum;
-                const config = LEVEL_CONFIGS[levelNum - 1];
+                const config = getLevelConfig(levelNum);
                 this.targetScore = config.targetScore;
                 this.movesLeft = config.moves;
                 this.score = 0;
-                this.selectedTile = null;
-                this.isAnimating = false;
+                this.activeBooster = null;
 
-                document.getElementById('game-level-title').innerText = `LEVEL ${levelNum}`;
-                document.getElementById('game-target').innerText = this.targetScore;
-                document.getElementById('game-moves').innerText = this.movesLeft;
-                document.getElementById('game-score').innerText = '0';
-                document.getElementById('game-progress-bar').style.width = '0%';
+                this.switchScreen('screen-game');
+                this.updateUIHeader();
+                this.generateBoard(config.candiesCount);
+            }
 
-                this.generateValidStartingBoard(config.candiesCount);
-                this.showScreen('screen-game');
+            updateUIHeader() {
+                const lvl = document.getElementById('game-level-num');
+                const tgt = document.getElementById('game-target');
+                const mvs = document.getElementById('game-moves');
+                const scr = document.getElementById('game-score');
+                const bar = document.getElementById('game-progress-bar');
+
+                if (lvl) lvl.innerText = this.currentLevel;
+                if (tgt) tgt.innerText = this.targetScore;
+                if (mvs) mvs.innerText = this.movesLeft;
+                if (scr) scr.innerText = this.score;
+
+                if (bar) {
+                    const pct = Math.min(100, Math.floor((this.score / this.targetScore) * 100));
+                    bar.style.width = `${pct}%`;
+                }
+            }
+
+            setupCanvas() {
+                this.canvas = document.getElementById('game-canvas');
+                if (!this.canvas) return;
+
+                this.ctx = this.canvas.getContext('2d');
+                const container = document.getElementById('board-container');
+                const rect = container ? container.getBoundingClientRect() : { width: 320, height: 320 };
+
+                const dpr = window.devicePixelRatio || 1;
+                this.canvas.width = rect.width * dpr;
+                this.canvas.height = rect.height * dpr;
+                this.ctx.scale(dpr, dpr);
+
+                this.tileSize = rect.width / BOARD_SIZE;
+                this.canvas.onclick = (e) => this.onCanvasClick(e);
+                
                 this.startRenderLoop();
             }
 
-            generateValidStartingBoard(maxCandies) {
-                let validBoard = false;
-                while (!validBoard) {
-                    this.board = [];
-                    for (let r = 0; r < this.gridSize; r++) {
-                        this.board[r] = [];
-                        for (let c = 0; c < this.gridSize; c++) {
-                            let type;
-                            do {
-                                type = Math.floor(Math.random() * maxCandies);
-                            } while (
-                                (c >= 2 && this.board[r][c-1].type === type && this.board[r][c-2].type === type) ||
-                                (r >= 2 && this.board[r-1][c].type === type && this.board[r-2][c].type === type)
-                            );
-                            
-                            this.board[r][c] = {
-                                type: type,
-                                special: null, // 'striped-h', 'striped-v', 'wrapped', 'colorbomb'
-                                r: r, c: c,
-                                offsetY: 0,
-                                alpha: 1
-                            };
-                        }
-                    }
-
-                    // Verify board has at least 1 valid starting move
-                    if (this.hasPossibleMoves()) {
-                        validBoard = true;
-                    }
-                }
-                this.drawBoard();
+            startRenderLoop() {
+                if (this.animFrameId) cancelAnimationFrame(this.animFrameId);
+                const loop = () => {
+                    this.updatePhysics();
+                    this.render();
+                    this.animFrameId = requestAnimationFrame(loop);
+                };
+                loop();
             }
 
-            /* ----------------------------------------------------------------------
-               6. SWAPPING & MATCH DETECTION ENGINE
-               ---------------------------------------------------------------------- */
-            trySwap(t1, t2) {
-                if (this.isAnimating) return;
-                this.isAnimating = true;
+            generateBoard(typeCount = 6) {
+                this.board = [];
+                for (let r = 0; r < BOARD_SIZE; r++) {
+                    const row = [];
+                    for (let c = 0; c < BOARD_SIZE; c++) {
+                        let type;
+                        do {
+                            type = Math.floor(Math.random() * typeCount);
+                        } while (
+                            (c >= 2 && row[c - 1]?.type === type && row[c - 2]?.type === type) ||
+                            (r >= 2 && this.board[r - 1][c]?.type === type && this.board[r - 2][c]?.type === type)
+                        );
 
-                sound.playSwap();
+                        row.push({
+                            type: type,
+                            special: null,
+                            squishX: 1,
+                            squishY: 1,
+                            vx: 0,
+                            vy: 0,
+                            offsetY: 0
+                        });
+                    }
+                    this.board.push(row);
+                }
+            }
 
-                // Perform swap in board matrix
-                this.swapBoardTiles(t1, t2);
+            shuffleBoard() {
+                for (let r = 0; r < BOARD_SIZE; r++) {
+                    for (let c = 0; c < BOARD_SIZE; c++) {
+                        const nr = Math.floor(Math.random() * BOARD_SIZE);
+                        const nc = Math.floor(Math.random() * BOARD_SIZE);
+                        const temp = this.board[r][c];
+                        this.board[r][c] = this.board[nr][nc];
+                        this.board[nr][nc] = temp;
+                    }
+                }
+            }
 
-                // Check for match or special combinations
-                const matches = this.findMatches();
-                const isSpecialCombo = this.isSpecialCombination(t1, t2);
+            onCanvasClick(e) {
+                if (this.isAnimating || !this.canvas) return;
 
-                if (matches.length > 0 || isSpecialCombo) {
-                    this.movesLeft--;
-                    document.getElementById('game-moves').innerText = this.movesLeft;
+                const rect = this.canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
 
-                    if (isSpecialCombo) {
-                        this.handleSpecialCombo(t1, t2);
-                    } else {
-                        this.processMatches(matches);
+                const col = Math.floor(x / this.tileSize);
+                const row = Math.floor(y / this.tileSize);
+
+                if (col >= 0 && col < BOARD_SIZE && row >= 0 && row < BOARD_SIZE) {
+                    this.handleTileClick({ x: col, y: row });
+                }
+            }
+
+            async handleTileClick(tile) {
+                if (this.activeBooster === 'hammer') {
+                    this.activeBooster = null;
+                    const container = document.getElementById('board-container');
+                    if (container) container.classList.remove('ring-4', 'ring-yellow-400', 'animate-pulse');
+
+                    sound.playExplosion();
+                    this.createLiquidSplashes(tile.x * this.tileSize + this.tileSize / 2, tile.y * this.tileSize + this.tileSize / 2, CANDY_TYPES[this.board[tile.y][tile.x]?.type || 0].main);
+                    this.showScorePopup(tile.x * this.tileSize, tile.y * this.tileSize, "+100");
+                    this.score += 100;
+                    this.updateUIHeader();
+                    this.board[tile.y][tile.x] = null;
+                    this.isAnimating = true;
+                    await this.applyGravityAndRefill();
+                    this.isAnimating = false;
+                    return;
+                }
+
+                if (!this.selectedTile) {
+                    this.selectedTile = tile;
+                    if (this.board[tile.y][tile.x]) {
+                        this.board[tile.y][tile.x].squishX = 1.35;
+                        this.board[tile.y][tile.x].squishY = 0.7;
                     }
                 } else {
-                    // Invalid move - reverse swap with animation
-                    setTimeout(() => {
-                        this.swapBoardTiles(t1, t2);
-                        this.isAnimating = false;
-                        this.drawBoard();
-                    }, 250);
-                }
-            }
+                    const prev = this.selectedTile;
+                    this.selectedTile = null;
 
-            swapBoardTiles(t1, t2) {
-                const temp = this.board[t1.r][t1.c];
-                this.board[t1.r][t1.c] = this.board[t2.r][t2.c];
-                this.board[t2.r][t2.c] = temp;
+                    const dx = Math.abs(prev.x - tile.x);
+                    const dy = Math.abs(prev.y - tile.y);
 
-                this.board[t1.r][t1.c].r = t1.r;
-                this.board[t1.r][t1.c].c = t1.c;
-                this.board[t2.r][t2.c].r = t2.r;
-                this.board[t2.r][t2.c].c = t2.c;
-            }
-
-            isSpecialCombination(t1, t2) {
-                const b1 = this.board[t1.r][t1.c];
-                const b2 = this.board[t2.r][t2.c];
-                return (b1.special && b2.special);
-            }
-
-            handleSpecialCombo(t1, t2) {
-                const b1 = this.board[t1.r][t1.c];
-                const b2 = this.board[t2.r][t2.c];
-                const toClear = new Set();
-
-                // Color Bomb + Color Bomb = Clear Entire Board
-                if (b1.special === 'colorbomb' && b2.special === 'colorbomb') {
-                    for (let r = 0; r < 8; r++) {
-                        for (let c = 0; c < 8; c++) toClear.add(`${r},${c}`);
+                    if ((dx === 1 && dy === 0) || (dx === 0 && dy === 1)) {
+                        await this.trySwap(prev, tile);
                     }
                 }
-                // Striped + Striped = Cross Clear (Full Row & Column)
-                else if (b1.special.includes('striped') && b2.special.includes('striped')) {
-                    for (let i = 0; i < 8; i++) {
-                        toClear.add(`${t2.r},${i}`);
-                        toClear.add(`${i},${t2.c}`);
-                    }
-                }
-                // Color Bomb + Any standard/special candy
-                else if (b1.special === 'colorbomb' || b2.special === 'colorbomb') {
-                    const targetType = b1.special === 'colorbomb' ? b2.type : b1.type;
-                    for (let r = 0; r < 8; r++) {
-                        for (let c = 0; c < 8; c++) {
-                            if (this.board[r][c].type === targetType) toClear.add(`${r},${c}`);
+            }
+
+            async trySwap(tile1, tile2) {
+                this.isAnimating = true;
+                const c1 = this.board[tile1.y][tile1.x];
+                const c2 = this.board[tile2.y][tile2.x];
+
+                if (c1?.special === 'color-bomb' || c2?.special === 'color-bomb') {
+                    sound.playSpecial();
+                    const bombTile = c1?.special === 'color-bomb' ? tile1 : tile2;
+                    const targetCandy = c1?.special === 'color-bomb' ? c2 : c1;
+
+                    this.movesLeft--;
+                    this.updateUIHeader();
+                    this.board[bombTile.y][bombTile.x] = null;
+
+                    if (targetCandy) {
+                        for (let r = 0; r < BOARD_SIZE; r++) {
+                            for (let c = 0; c < BOARD_SIZE; c++) {
+                                if (this.board[r][c]?.type === targetCandy.type) {
+                                    this.createLiquidSplashes(c * this.tileSize + this.tileSize / 2, r * this.tileSize + this.tileSize / 2, CANDY_TYPES[targetCandy.type].main);
+                                    this.board[r][c] = null;
+                                    this.score += 75;
+                                }
+                            }
                         }
                     }
-                    toClear.add(`${t1.r},${t1.c}`);
-                    toClear.add(`${t2.r},${t2.c}`);
+                    this.showScorePopup(tile2.x * this.tileSize, tile2.y * this.tileSize, "+300");
+                    this.updateUIHeader();
+                    await this.applyGravityAndRefill();
+                    this.isAnimating = false;
+                    this.checkGameStatus();
+                    return;
                 }
 
-                sound.playSpecial();
-                this.clearTilesAndCascade(Array.from(toClear).map(s => {
-                    const [r, c] = s.split(',').map(Number);
-                    return { r, c };
-                }));
+                this.board[tile1.y][tile1.x] = c2;
+                this.board[tile2.y][tile2.x] = c1;
+
+                if (c1) { c1.squishX = 0.8; c1.squishY = 1.25; }
+                if (c2) { c2.squishX = 1.25; c2.squishY = 0.8; }
+
+                sound.playSwap();
+                await new Promise(r => setTimeout(r, 160));
+
+                const matches = this.findMatches();
+                if (matches.length > 0) {
+                    this.movesLeft--;
+                    this.updateUIHeader();
+                    await this.processMatches();
+                } else {
+                    this.board[tile1.y][tile1.x] = c1;
+                    this.board[tile2.y][tile2.x] = c2;
+                    await new Promise(r => setTimeout(r, 160));
+                }
+
+                this.isAnimating = false;
+                this.checkGameStatus();
             }
 
             findMatches() {
-                const matchedSet = new Set();
                 const matchGroups = [];
 
-                // Horizontal Matches
-                for (let r = 0; r < this.gridSize; r++) {
-                    let matchLen = 1;
-                    for (let c = 0; c < this.gridSize; c++) {
-                        const checkNext = c < this.gridSize - 1 && 
-                                          this.board[r][c].type === this.board[r][c+1].type &&
-                                          this.board[r][c].special !== 'colorbomb';
-                        if (checkNext) {
-                            matchLen++;
+                for (let r = 0; r < BOARD_SIZE; r++) {
+                    let run = [];
+                    for (let c = 0; c < BOARD_SIZE; c++) {
+                        const current = this.board[r][c];
+                        if (run.length === 0) {
+                            run.push({ r, c, type: current?.type });
+                        } else if (current && current.type === run[0].type) {
+                            run.push({ r, c, type: current.type });
                         } else {
-                            if (matchLen >= 3) {
-                                const group = [];
-                                for (let i = 0; i < matchLen; i++) {
-                                    const tile = { r, c: c - i };
-                                    matchedSet.add(`${r},${c-i}`);
-                                    group.push(tile);
-                                }
-                                matchGroups.push({ dir: 'h', tiles: group });
-                            }
-                            matchLen = 1;
+                            if (run.length >= 3) matchGroups.push([...run]);
+                            run = [{ r, c, type: current?.type }];
                         }
                     }
+                    if (run.length >= 3) matchGroups.push([...run]);
                 }
 
-                // Vertical Matches
-                for (let c = 0; c < this.gridSize; c++) {
-                    let matchLen = 1;
-                    for (let r = 0; r < this.gridSize; r++) {
-                        const checkNext = r < this.gridSize - 1 && 
-                                          this.board[r][c].type === this.board[r+1][c].type &&
-                                          this.board[r][c].special !== 'colorbomb';
-                        if (checkNext) {
-                            matchLen++;
+                for (let c = 0; c < BOARD_SIZE; c++) {
+                    let run = [];
+                    for (let r = 0; r < BOARD_SIZE; r++) {
+                        const current = this.board[r][c];
+                        if (run.length === 0) {
+                            run.push({ r, c, type: current?.type });
+                        } else if (current && current.type === run[0].type) {
+                            run.push({ r, c, type: current.type });
                         } else {
-                            if (matchLen >= 3) {
-                                const group = [];
-                                for (let i = 0; i < matchLen; i++) {
-                                    const tile = { r: r - i, c };
-                                    matchedSet.add(`${r-i},${c}`);
-                                    group.push(tile);
-                                }
-                                matchGroups.push({ dir: 'v', tiles: group });
-                            }
-                            matchLen = 1;
+                            if (run.length >= 3) matchGroups.push([...run]);
+                            run = [{ r, c, type: current?.type }];
                         }
                     }
+                    if (run.length >= 3) matchGroups.push([...run]);
                 }
 
                 return matchGroups;
             }
 
-            processMatches(matchGroups) {
-                const toClearMap = new Map();
-                const specialToSpawn = [];
+            async processMatches() {
+                let matchGroups = this.findMatches();
+                let multiplier = 1;
 
-                matchGroups.forEach(g => {
-                    const len = g.tiles.length;
-                    const centerTile = g.tiles[Math.floor(len / 2)];
+                while (matchGroups.length > 0) {
+                    sound.playMatch();
+                    let totalMatchedCoords = new Set();
+                    let colorBombSpawn = null;
 
-                    if (len === 4) {
-                        // Create Striped Candy
-                        specialToSpawn.push({
-                            r: centerTile.r, c: centerTile.c,
-                            type: this.board[centerTile.r][centerTile.c].type,
-                            special: g.dir === 'h' ? 'striped-v' : 'striped-h'
-                        });
-                    } else if (len >= 5) {
-                        // Create Color Bomb
-                        specialToSpawn.push({
-                            r: centerTile.r, c: centerTile.c,
-                            type: 0,
-                            special: 'colorbomb'
-                        });
-                    }
-
-                    g.tiles.forEach(t => {
-                        toClearMap.set(`${t.r},${t.c}`, t);
+                    matchGroups.forEach(group => {
+                        group.forEach(cell => totalMatchedCoords.add(`${cell.r},${cell.c}`));
+                        if (group.length >= 5) {
+                            colorBombSpawn = group[Math.floor(group.length / 2)];
+                        }
                     });
-                });
 
-                let clearList = Array.from(toClearMap.values());
+                    const matchedList = Array.from(totalMatchedCoords).map(s => {
+                        const [r, c] = s.split(',').map(Number);
+                        return { r, c };
+                    });
 
-                // Expand clears for existing special candies activated in this match
-                const expandedClear = new Set();
-                clearList.forEach(t => {
-                    expandedClear.add(`${t.r},${t.c}`);
-                    const b = this.board[t.r][t.c];
-                    if (b.special === 'striped-h') {
-                        for (let c = 0; c < 8; c++) expandedClear.add(`${t.r},${c}`);
-                    } else if (b.special === 'striped-v') {
-                        for (let r = 0; r < 8; r++) expandedClear.add(`${r},${t.c}`);
-                    } else if (b.special === 'wrapped') {
-                        for (let dr = -1; dr <= 1; dr++) {
-                            for (let dc = -1; dc <= 1; dc++) {
-                                const nr = t.r + dr, nc = t.c + dc;
-                                if (nr >= 0 && nr < 8 && nc >= 0 && nc < 8) expandedClear.add(`${nr},${nc}`);
+                    const pointsEarned = matchedList.length * 20 * multiplier;
+                    this.score += pointsEarned;
+
+                    if (matchedList.length > 0) {
+                        const centerCell = matchedList[Math.floor(matchedList.length / 2)];
+                        this.showScorePopup(centerCell.c * this.tileSize, centerCell.r * this.tileSize, `+${pointsEarned}`);
+                    }
+
+                    this.updateUIHeader();
+
+                    matchedList.forEach(({ r, c }) => {
+                        const candy = this.board[r][c];
+                        if (candy) {
+                            const cx = c * this.tileSize + this.tileSize / 2;
+                            const cy = r * this.tileSize + this.tileSize / 2;
+                            const color = CANDY_TYPES[candy.type]?.main || '#ffffff';
+                            this.createLiquidSplashes(cx, cy, color);
+                            this.ripples.push({ x: cx, y: cy, radius: 4, maxRadius: this.tileSize * 1.5, alpha: 1, color });
+                        }
+                        this.board[r][c] = null;
+                    });
+
+                    if (colorBombSpawn) {
+                        this.board[colorBombSpawn.r][colorBombSpawn.c] = {
+                            type: 0,
+                            special: 'color-bomb',
+                            squishX: 1.4,
+                            squishY: 1.4,
+                            vx: 0, vy: 0, offsetY: 0
+                        };
+                        sound.playSpecial();
+                    }
+
+                    await new Promise(r => setTimeout(r, 220));
+                    await this.applyGravityAndRefill();
+                    multiplier++;
+                    matchGroups = this.findMatches();
+                }
+            }
+
+            showScorePopup(x, y, text) {
+                const container = document.getElementById('board-container');
+                if (!container) return;
+
+                const popup = document.createElement('div');
+                popup.className = 'score-popup text-xl';
+                popup.style.left = `${x + 10}px`;
+                popup.style.top = `${y + 10}px`;
+                popup.innerText = text;
+
+                container.appendChild(popup);
+                setTimeout(() => popup.remove(), 800);
+            }
+
+            async applyGravityAndRefill() {
+                const typeCount = getLevelConfig(this.currentLevel).candiesCount;
+
+                for (let c = 0; c < BOARD_SIZE; c++) {
+                    let emptyRow = BOARD_SIZE - 1;
+                    for (let r = BOARD_SIZE - 1; r >= 0; r--) {
+                        if (this.board[r][c] !== null) {
+                            if (r !== emptyRow) {
+                                this.board[emptyRow][c] = this.board[r][c];
+                                this.board[emptyRow][c].squishX = 0.85;
+                                this.board[emptyRow][c].squishY = 1.25;
+                                this.board[r][c] = null;
                             }
-                        }
-                    }
-                });
-
-                clearList = Array.from(expandedClear).map(key => {
-                    const [r, c] = key.split(',').map(Number);
-                    return { r, c };
-                });
-
-                // Calculate Score
-                const matchScore = clearList.length * 20 + (clearList.length > 3 ? 100 : 0);
-                this.addScore(matchScore, clearList[0]);
-
-                if (clearList.length >= 4) sound.playSpecial(); else sound.playMatch();
-
-                this.clearTilesAndCascade(clearList, specialToSpawn);
-            }
-
-            clearTilesAndCascade(clearList, specialToSpawn = []) {
-                // Spawn particles & visual popping
-                clearList.forEach(t => {
-                    const tile = this.board[t.r][t.c];
-                    this.createExplosionParticles(t.c * this.tileSize + this.tileSize/2, t.r * this.tileSize + this.tileSize/2, CANDY_TYPES[tile.type].color);
-                    this.board[t.r][t.c] = null;
-                });
-
-                // Place new Special Candies created
-                specialToSpawn.forEach(s => {
-                    this.board[s.r][s.c] = {
-                        type: s.type,
-                        special: s.special,
-                        r: s.r, c: s.c,
-                        offsetY: 0, alpha: 1
-                    };
-                });
-
-                // Apply Gravity & Drop Candies Downward
-                setTimeout(() => {
-                    this.applyGravity();
-                }, 150);
-            }
-
-            applyGravity() {
-                const config = LEVEL_CONFIGS[this.currentLevel - 1];
-
-                for (let c = 0; c < this.gridSize; c++) {
-                    let emptySlots = 0;
-                    for (let r = this.gridSize - 1; r >= 0; r--) {
-                        if (this.board[r][c] === null) {
-                            emptySlots++;
-                        } else if (emptySlots > 0) {
-                            // Move tile down
-                            const tile = this.board[r][c];
-                            this.board[r + emptySlots][c] = tile;
-                            tile.r = r + emptySlots;
-                            tile.offsetY = -emptySlots * this.tileSize; // For drop animation
-                            this.board[r][c] = null;
+                            emptyRow--;
                         }
                     }
 
-                    // Refill Top Rows
-                    for (let i = 0; i < emptySlots; i++) {
-                        const newRow = emptySlots - 1 - i;
-                        const type = Math.floor(Math.random() * config.candiesCount);
-                        this.board[newRow][c] = {
-                            type: type,
+                    for (let r = emptyRow; r >= 0; r--) {
+                        this.board[r][c] = {
+                            type: Math.floor(Math.random() * typeCount),
                             special: null,
-                            r: newRow, c: c,
-                            offsetY: -emptySlots * this.tileSize,
-                            alpha: 1
+                            squishX: 0.75,
+                            squishY: 1.3,
+                            vx: 0, vy: 0, offsetY: -this.tileSize * 2
                         };
                     }
                 }
 
-                sound.playExplode();
-
-                // Cascading Loop Check
-                setTimeout(() => {
-                    const newMatches = this.findMatches();
-                    if (newMatches.length > 0) {
-                        this.showOverlayMsg("COMBO!");
-                        this.processMatches(newMatches);
-                    } else {
-                        this.isAnimating = false;
-                        this.checkBoardStatus();
-                    }
-                }, 300);
+                await new Promise(res => setTimeout(res, 220));
             }
 
-            checkBoardStatus() {
-                // Check Win/Lose Conditions
-                if (this.score >= this.targetScore) {
-                    this.handleWin();
-                    return;
-                }
-                if (this.movesLeft <= 0) {
-                    this.handleLose();
-                    return;
-                }
-
-                // Check for valid remaining moves
-                if (!this.hasPossibleMoves()) {
-                    this.showOverlayMsg("NO MOVES! SHUFFLING...");
-                    sound.playSpecial();
-                    setTimeout(() => this.shuffleBoard(), 1200);
-                }
-            }
-
-            hasPossibleMoves() {
-                // Check all possible 1-tile swaps
-                for (let r = 0; r < this.gridSize; r++) {
-                    for (let c = 0; c < this.gridSize; c++) {
-                        // Try Horizontal swap
-                        if (c < this.gridSize - 1) {
-                            this.swapBoardTiles({ r, c }, { r, c: c + 1 });
-                            const matches = this.findMatches();
-                            this.swapBoardTiles({ r, c }, { r, c: c + 1 }); // Revert
-                            if (matches.length > 0) return true;
-                        }
-                        // Try Vertical swap
-                        if (r < this.gridSize - 1) {
-                            this.swapBoardTiles({ r, c }, { r: r + 1, c });
-                            const matches = this.findMatches();
-                            this.swapBoardTiles({ r, c }, { r: r + 1, c }); // Revert
-                            if (matches.length > 0) return true;
-                        }
-                    }
-                }
-                return false;
-            }
-
-            shuffleBoard() {
-                const allCandies = [];
-                for (let r = 0; r < this.gridSize; r++) {
-                    for (let c = 0; c < this.gridSize; c++) {
-                        allCandies.push(this.board[r][c]);
-                    }
-                }
-                // Fisher-Yates Shuffle
-                for (let i = allCandies.length - 1; i > 0; i--) {
-                    const j = Math.floor(Math.random() * (i + 1));
-                    [allCandies[i], allCandies[j]] = [allCandies[j], allCandies[i]];
-                }
-
-                let idx = 0;
-                for (let r = 0; r < this.gridSize; r++) {
-                    for (let c = 0; c < this.gridSize; c++) {
-                        this.board[r][c] = allCandies[idx++];
-                        this.board[r][c].r = r;
-                        this.board[r][c].c = c;
-                    }
-                }
-
-                if (!this.hasPossibleMoves() || this.findMatches().length > 0) {
-                    this.shuffleBoard(); // Ensure valid shuffle
-                } else {
-                    this.drawBoard();
-                }
-            }
-
-            /* ----------------------------------------------------------------------
-               7. WIN / LOSE & SCORING MODALS
-               ---------------------------------------------------------------------- */
-            addScore(pts, originTile) {
-                this.score += pts;
-                document.getElementById('game-score').innerText = this.score;
-
-                // Update Progress bar
-                const pct = Math.min(100, (this.score / this.targetScore) * 100);
-                document.getElementById('game-progress-bar').style.width = `${pct}%`;
-
-                // Add Floating Score Text
-                if (originTile) {
-                    this.floatingTexts.push({
-                        text: `+${pts}`,
-                        x: originTile.c * this.tileSize + this.tileSize / 2,
-                        y: originTile.r * this.tileSize + this.tileSize / 2,
-                        alpha: 1.0,
-                        life: 40
+            createLiquidSplashes(x, y, color) {
+                for (let i = 0; i < 22; i++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const speed = Math.random() * 6 + 2;
+                    this.particles.push({
+                        x, y,
+                        vx: Math.cos(angle) * speed,
+                        vy: Math.sin(angle) * speed,
+                        size: Math.random() * 6 + 2,
+                        life: 1,
+                        color: color
                     });
                 }
             }
 
-            handleWin() {
-                sound.playWin();
-                const bonus = this.movesLeft * 150;
-                const totalScore = this.score + bonus;
-
-                // Calculate Star Rating (1 to 3 Stars)
-                let stars = 1;
-                if (totalScore >= this.targetScore * 1.4) stars = 3;
-                else if (totalScore >= this.targetScore * 1.15) stars = 2;
-
-                // Save Progress
-                this.progress.stars[this.currentLevel] = Math.max(this.progress.stars[this.currentLevel] || 0, stars);
-                if (this.currentLevel >= this.progress.unlockedLevel && this.currentLevel < TOTAL_LEVELS) {
-                    this.progress.unlockedLevel = this.currentLevel + 1;
-                }
-                if (totalScore > (this.progress.bestScore || 0)) {
-                    this.progress.bestScore = totalScore;
-                    this.updateHomeBestScore();
-                }
-                this.saveProgress();
-
-                // UI Display
-                document.getElementById('win-score-val').innerText = this.score;
-                document.getElementById('win-bonus-val').innerText = `+${bonus}`;
-                document.getElementById('win-total-val').innerText = totalScore;
-
-                // Animate Stars
-                ['star-1', 'star-2', 'star-3'].forEach((id, idx) => {
-                    const el = document.getElementById(id);
-                    if (idx < stars) {
-                        el.className = 'text-5xl text-yellow-400 drop-shadow-md transform scale-125 transition duration-500';
-                    } else {
-                        el.className = 'text-5xl text-gray-300 transform scale-90 transition duration-500';
+            checkGameStatus() {
+                if (this.score >= this.targetScore) {
+                    if (this.score > this.highScore) {
+                        this.highScore = this.score;
+                        localStorage.setItem('candy_high_score', this.highScore);
+                        this.updateHomeBestScore();
                     }
-                });
 
-                document.getElementById('modal-win').classList.remove('hidden');
+                    const starsEarned = this.score >= this.targetScore * 1.5 ? 3 : (this.score >= this.targetScore * 1.2 ? 2 : 1);
+                    localStorage.setItem(`candy_stars_lvl_${this.currentLevel}`, starsEarned);
+
+                    if (this.currentLevel >= this.unlockedLevel) {
+                        this.unlockedLevel = Math.min(TOTAL_LEVELS, this.currentLevel + 1);
+                        localStorage.setItem('candy_unlocked_level', this.unlockedLevel);
+                    }
+
+                    const winScore = document.getElementById('win-final-score');
+                    if (winScore) winScore.innerText = this.score;
+                    const modalWin = document.getElementById('modal-win');
+                    if (modalWin) modalWin.classList.remove('hidden');
+                    sound.playSpecial();
+
+                } else if (this.movesLeft <= 0) {
+                    const loseScore = document.getElementById('lose-final-score');
+                    if (loseScore) loseScore.innerText = this.score;
+                    const modalLose = document.getElementById('modal-lose');
+                    if (modalLose) modalLose.classList.remove('hidden');
+                }
             }
 
-            handleLose() {
-                sound.playLose();
-                document.getElementById('lose-target-val').innerText = this.targetScore;
-                document.getElementById('lose-score-val').innerText = this.score;
-                document.getElementById('modal-lose').classList.remove('hidden');
-            }
-
-            showOverlayMsg(text) {
-                const overlay = document.getElementById('canvas-overlay-text');
-                const content = document.getElementById('overlay-msg-content');
-                content.innerText = text;
-                overlay.style.opacity = '1';
-                setTimeout(() => { overlay.style.opacity = '0'; }, 1000);
-            }
-
-            /* ----------------------------------------------------------------------
-               8. CANVAS RENDERING & CANDY GRAPHICS PROCEDURES
-               ---------------------------------------------------------------------- */
-            startRenderLoop() {
-                const loop = () => {
-                    this.updateAnimations();
-                    this.drawBoard();
-                    requestAnimationFrame(loop);
-                };
-                requestAnimationFrame(loop);
-            }
-
-            updateAnimations() {
-                // Smooth tile drop easing
-                for (let r = 0; r < this.gridSize; r++) {
-                    for (let c = 0; c < this.gridSize; c++) {
-                        const tile = this.board[r][c];
-                        if (tile && tile.offsetY < 0) {
-                            tile.offsetY += 12;
-                            if (tile.offsetY > 0) tile.offsetY = 0;
+            updatePhysics() {
+                for (let r = 0; r < BOARD_SIZE; r++) {
+                    for (let c = 0; c < BOARD_SIZE; c++) {
+                        const candy = this.board[r]?.[c];
+                        if (candy) {
+                            candy.squishX += (1 - candy.squishX) * 0.15;
+                            candy.squishY += (1 - candy.squishY) * 0.15;
+                            if (candy.offsetY < 0) {
+                                candy.offsetY += 5;
+                                if (candy.offsetY > 0) candy.offsetY = 0;
+                            }
                         }
                     }
                 }
 
-                // Update Explosion Particles
+                this.underwaterBubbles.forEach(b => {
+                    b.y -= b.vy;
+                    b.wobble += 0.05;
+                    b.x += Math.sin(b.wobble) * 0.4;
+                    if (b.y < -10) {
+                        b.y = 370;
+                        b.x = Math.random() * 360;
+                    }
+                });
+
+                this.bgFish.forEach(f => {
+                    f.x += f.speed;
+                    f.tailPhase += 0.15;
+                    if (f.speed > 0 && f.x > 400) f.x = -40;
+                    if (f.speed < 0 && f.x < -40) f.x = 400;
+                });
+            }
+
+            render() {
+                if (!this.ctx || !this.canvas) return;
+
+                const ctx = this.ctx;
+                ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+                // Underwater Ambient Bubbles & Fish
+                this.underwaterBubbles.forEach(b => {
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.28)';
+                    ctx.beginPath();
+                    ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+
+                this.bgFish.forEach(f => {
+                    ctx.save();
+                    ctx.translate(f.x, f.y);
+                    if (f.speed < 0) ctx.scale(-1, 1);
+                    ctx.fillStyle = f.color;
+                    ctx.beginPath();
+                    ctx.ellipse(0, 0, f.size, f.size * 0.6, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    const tailWobble = Math.sin(f.tailPhase) * 6;
+                    ctx.beginPath();
+                    ctx.moveTo(-f.size * 0.8, 0);
+                    ctx.lineTo(-f.size * 1.5, -f.size * 0.5 + tailWobble);
+                    ctx.lineTo(-f.size * 1.5, f.size * 0.5 + tailWobble);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.restore();
+                });
+
+                // Board Grid Checker Pattern
+                for (let r = 0; r < BOARD_SIZE; r++) {
+                    for (let c = 0; c < BOARD_SIZE; c++) {
+                        ctx.fillStyle = (r + c) % 2 === 0 ? 'rgba(255, 255, 255, 0.07)' : 'rgba(0, 0, 0, 0.16)';
+                        ctx.fillRect(c * this.tileSize, r * this.tileSize, this.tileSize, this.tileSize);
+
+                        if (this.selectedTile && this.selectedTile.x === c && this.selectedTile.y === r) {
+                            ctx.strokeStyle = '#fde047';
+                            ctx.lineWidth = 4;
+                            ctx.strokeRect(c * this.tileSize + 2, r * this.tileSize + 2, this.tileSize - 4, this.tileSize - 4);
+                        }
+                    }
+                }
+
+                // Shockwave Ripples
+                for (let i = this.ripples.length - 1; i >= 0; i--) {
+                    const rp = this.ripples[i];
+                    rp.radius += 3;
+                    rp.alpha -= 0.045;
+                    if (rp.alpha <= 0) {
+                        this.ripples.splice(i, 1);
+                    } else {
+                        ctx.strokeStyle = rp.color;
+                        ctx.globalAlpha = rp.alpha;
+                        ctx.lineWidth = 2.5;
+                        ctx.beginPath();
+                        ctx.arc(rp.x, rp.y, rp.radius, 0, Math.PI * 2);
+                        ctx.stroke();
+                        ctx.globalAlpha = 1.0;
+                    }
+                }
+
+                // Render 3D Translucent Gelatin Candies
+                for (let r = 0; r < BOARD_SIZE; r++) {
+                    for (let c = 0; c < BOARD_SIZE; c++) {
+                        const candy = this.board[r]?.[c];
+                        if (candy) {
+                            this.draw3DGelatinCandy(candy, c * this.tileSize + this.tileSize / 2, r * this.tileSize + this.tileSize / 2 + candy.offsetY, this.tileSize);
+                        }
+                    }
+                }
+
+                // Liquid Splash Droplets
                 for (let i = this.particles.length - 1; i >= 0; i--) {
                     const p = this.particles[i];
                     p.x += p.vx;
                     p.y += p.vy;
-                    p.alpha -= 0.03;
-                    if (p.alpha <= 0) this.particles.splice(i, 1);
-                }
+                    p.vy += 0.18;
+                    p.life -= 0.035;
 
-                // Update Floating Score Texts
-                for (let i = this.floatingTexts.length - 1; i >= 0; i--) {
-                    const ft = this.floatingTexts[i];
-                    ft.y -= 1.2;
-                    ft.alpha -= 0.02;
-                    if (ft.alpha <= 0) this.floatingTexts.splice(i, 1);
+                    if (p.life <= 0) {
+                        this.particles.splice(i, 1);
+                    } else {
+                        ctx.fillStyle = p.color;
+                        ctx.globalAlpha = p.life;
+                        ctx.beginPath();
+                        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.globalAlpha = 1.0;
+                    }
                 }
             }
 
-            createExplosionParticles(x, y, color) {
-                for (let i = 0; i < 12; i++) {
-                    const angle = Math.random() * Math.PI * 2;
-                    const speed = 2 + Math.random() * 4;
-                    this.particles.push({
-                        x: x, y: y,
-                        vx: Math.cos(angle) * speed,
-                        vy: Math.sin(angle) * speed,
-                        size: 4 + Math.random() * 6,
-                        color: color,
-                        alpha: 1.0
-                    });
-                }
-            }
+            draw3DGelatinCandy(candy, px, py, tileSize) {
+                if (!candy) return;
 
-            drawBoard() {
-                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                const ctx = this.ctx;
+                const radius = tileSize * 0.38;
+                const colorInfo = CANDY_TYPES[candy.type] || CANDY_TYPES[0];
 
-                // Draw Grid Background Cells
-                for (let r = 0; r < this.gridSize; r++) {
-                    for (let c = 0; c < this.gridSize; c++) {
-                        const x = c * this.tileSize;
-                        const y = r * this.tileSize;
+                ctx.save();
+                ctx.translate(px, py);
+                ctx.scale(Math.max(0.1, candy.squishX), Math.max(0.1, candy.squishY));
 
-                        // Alternating checkerboard tiles
-                        this.ctx.fillStyle = (r + c) % 2 === 0 ? 'rgba(255, 255, 255, 0.4)' : 'rgba(255, 255, 255, 0.2)';
-                        this.ctx.beginPath();
-                        this.ctx.roundRect(x + 2, y + 2, this.tileSize - 4, this.tileSize - 4, 12);
-                        this.ctx.fill();
+                if (candy.special === 'color-bomb') {
+                    const bombGrad = ctx.createRadialGradient(-radius * 0.2, -radius * 0.2, radius * 0.1, 0, 0, radius);
+                    bombGrad.addColorStop(0, '#6b7280');
+                    bombGrad.addColorStop(0.6, '#1f2937');
+                    bombGrad.addColorStop(1, '#0f172a');
 
-                        // Highlight Selected Tile
-                        if (this.selectedTile && this.selectedTile.r === r && this.selectedTile.c === c) {
-                            this.ctx.strokeStyle = '#fff';
-                            this.ctx.lineWidth = 4;
-                            this.ctx.stroke();
-                        }
+                    ctx.fillStyle = bombGrad;
+                    ctx.beginPath();
+                    ctx.arc(0, 0, Math.max(0.1, radius), 0, Math.PI * 2);
+                    ctx.fill();
+
+                    const sprinkleColors = ['#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#a855f7'];
+                    for (let i = 0; i < 5; i++) {
+                        const angle = (i / 5) * Math.PI * 2;
+                        const sx = Math.cos(angle) * (radius * 0.5);
+                        const sy = Math.sin(angle) * (radius * 0.5);
+                        ctx.fillStyle = sprinkleColors[i];
+                        ctx.beginPath();
+                        ctx.arc(sx, sy, 3, 0, Math.PI * 2);
+                        ctx.fill();
                     }
-                }
-
-                // Draw Candies
-                for (let r = 0; r < this.gridSize; r++) {
-                    for (let c = 0; c < this.gridSize; c++) {
-                        const tile = this.board[r][c];
-                        if (tile) {
-                            const x = c * this.tileSize;
-                            const y = r * this.tileSize + tile.offsetY;
-                            this.drawCandy(x, y, this.tileSize, tile);
-                        }
-                    }
-                }
-
-                // Draw Explosion Particles
-                this.particles.forEach(p => {
-                    this.ctx.save();
-                    this.ctx.globalAlpha = p.alpha;
-                    this.ctx.fillStyle = p.color;
-                    this.ctx.beginPath();
-                    this.ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-                    this.ctx.fill();
-                    this.ctx.restore();
-                });
-
-                // Draw Floating Score Texts
-                this.floatingTexts.forEach(ft => {
-                    this.ctx.save();
-                    this.ctx.globalAlpha = ft.alpha;
-                    this.ctx.font = 'bold 20px "Fredoka One", cursive';
-                    this.ctx.fillStyle = '#fff';
-                    this.ctx.strokeStyle = '#d1365c';
-                    this.ctx.lineWidth = 4;
-                    this.ctx.strokeText(ft.text, ft.x - 15, ft.y);
-                    this.ctx.fillText(ft.text, ft.x - 15, ft.y);
-                    this.ctx.restore();
-                });
-            }
-
-            drawCandy(x, y, size, tile) {
-                const padding = size * 0.12;
-                const cSize = size - padding * 2;
-                const cx = x + size / 2;
-                const cy = y + size / 2;
-                const radius = cSize / 2;
-
-                this.ctx.save();
-
-                // Special Candy Color Bomb (Rainbow Orb)
-                if (tile.special === 'colorbomb') {
-                    const grad = this.ctx.createRadialGradient(cx, cy, 2, cx, cy, radius);
-                    grad.addColorStop(0, '#fff');
-                    grad.addColorStop(0.2, '#ff3b5c');
-                    grad.addColorStop(0.4, '#f1c40f');
-                    grad.addColorStop(0.6, '#2ecc71');
-                    grad.addColorStop(0.8, '#00d2ff');
-                    grad.addColorStop(1, '#9b59b6');
-
-                    this.ctx.fillStyle = grad;
-                    this.ctx.beginPath();
-                    this.ctx.arc(cx, cy, radius, 0, Math.PI * 2);
-                    this.ctx.fill();
-
-                    // Sparkle dots
-                    this.ctx.fillStyle = '#fff';
-                    for (let i = 0; i < 4; i++) {
-                        const ang = (Date.now() / 300) + (i * Math.PI / 2);
-                        const sx = cx + Math.cos(ang) * (radius * 0.5);
-                        const sy = cy + Math.sin(ang) * (radius * 0.5);
-                        this.ctx.beginPath();
-                        this.ctx.arc(sx, sy, 3, 0, Math.PI * 2);
-                        this.ctx.fill();
-                    }
-                    this.ctx.restore();
+                    ctx.restore();
                     return;
                 }
 
-                // Standard Candies Vector Graphics
-                const candyInfo = CANDY_TYPES[tile.type] || CANDY_TYPES[0];
-                this.ctx.fillStyle = candyInfo.color;
+                // 3D Gelatin Soft Drop Shadow
+                ctx.beginPath();
+                ctx.ellipse(0, radius * 0.78, Math.max(0.1, radius * 0.82), Math.max(0.1, radius * 0.26), 0, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
+                ctx.fill();
 
-                switch (tile.type) {
-                    case 0: // Red Jelly Drop
-                        this.ctx.beginPath();
-                        this.ctx.arc(cx, cy + radius * 0.2, radius * 0.8, 0, Math.PI);
-                        this.ctx.quadraticCurveTo(cx - radius, cy - radius * 0.8, cx, cy - radius);
-                        this.ctx.quadraticCurveTo(cx + radius, cy - radius * 0.8, cx + radius * 0.8, cy + radius * 0.2);
-                        this.ctx.fill();
-                        break;
+                // Translucent Subsurface Scattering Gelatin Gradient
+                const gelGrad = ctx.createRadialGradient(-radius * 0.3, -radius * 0.35, radius * 0.05, 0, 0, radius * 1.15);
+                gelGrad.addColorStop(0, '#ffffff');
+                gelGrad.addColorStop(0.2, colorInfo.light);
+                gelGrad.addColorStop(0.65, colorInfo.main);
+                gelGrad.addColorStop(1, colorInfo.dark);
 
-                    case 1: // Blue Diamond
-                        this.ctx.beginPath();
-                        this.ctx.moveTo(cx, cy - radius);
-                        this.ctx.lineTo(cx + radius, cy);
-                        this.ctx.lineTo(cx, cy + radius);
-                        this.ctx.lineTo(cx - radius, cy);
-                        this.ctx.closePath();
-                        this.ctx.fill();
-                        break;
+                ctx.fillStyle = gelGrad;
+                ctx.shadowColor = colorInfo.gelGlow;
+                ctx.shadowBlur = 12;
 
-                    case 2: // Green Sugar Gummy
-                        this.ctx.beginPath();
-                        this.ctx.roundRect(cx - radius * 0.85, cy - radius * 0.85, cSize * 0.85, cSize * 0.85, 10);
-                        this.ctx.fill();
-                        break;
-
-                    case 3: // Yellow 5-Point Star
-                        this.drawStar(cx, cy, 5, radius, radius * 0.5);
-                        this.ctx.fill();
-                        break;
-
-                    case 4: // Purple Swirl Orb
-                        this.ctx.beginPath();
-                        this.ctx.arc(cx, cy, radius, 0, Math.PI * 2);
-                        this.ctx.fill();
-                        // Inner Swirl Line
-                        this.ctx.strokeStyle = '#fff';
-                        this.ctx.lineWidth = 3;
-                        this.ctx.beginPath();
-                        this.ctx.arc(cx, cy, radius * 0.5, 0, Math.PI * 1.2);
-                        this.ctx.stroke();
-                        break;
-
-                    case 5: // Orange Round Candy
-                    default:
-                        this.ctx.beginPath();
-                        this.ctx.arc(cx, cy, radius, 0, Math.PI * 2);
-                        this.ctx.fill();
-                        break;
+                ctx.beginPath();
+                if (colorInfo.shape === 'diamond') {
+                    ctx.moveTo(0, -radius * 1.1);
+                    ctx.lineTo(radius * 1.05, 0);
+                    ctx.lineTo(0, radius * 1.1);
+                    ctx.lineTo(-radius * 1.05, 0);
+                    ctx.closePath();
+                } else if (colorInfo.shape === 'square') {
+                    const r = radius * 0.45;
+                    ctx.roundRect(-radius, -radius, radius * 2, radius * 2, r);
+                } else if (colorInfo.shape === 'triangle') {
+                    ctx.moveTo(0, -radius * 1.15);
+                    ctx.lineTo(radius * 1.1, radius * 0.9);
+                    ctx.lineTo(-radius * 1.1, radius * 0.9);
+                    ctx.closePath();
+                } else if (colorInfo.shape === 'oval') {
+                    ctx.ellipse(0, 0, Math.max(0.1, radius * 1.18), Math.max(0.1, radius * 0.82), 0, 0, Math.PI * 2);
+                } else if (colorInfo.shape === 'cluster') {
+                    ctx.arc(-radius * 0.4, -radius * 0.3, radius * 0.58, 0, Math.PI * 2);
+                    ctx.arc(radius * 0.4, -radius * 0.3, radius * 0.58, 0, Math.PI * 2);
+                    ctx.arc(0, radius * 0.3, radius * 0.68, 0, Math.PI * 2);
+                } else {
+                    ctx.arc(0, 0, Math.max(0.1, radius), 0, Math.PI * 2);
                 }
+                ctx.fill();
+                ctx.shadowBlur = 0;
 
-                // Inner Sheen / Shiny Highlight
-                this.ctx.fillStyle = 'rgba(255, 255, 255, 0.55)';
-                this.ctx.beginPath();
-                this.ctx.ellipse(cx - radius * 0.3, cy - radius * 0.35, radius * 0.3, radius * 0.18, -Math.PI / 4, 0, Math.PI * 2);
-                this.ctx.fill();
+                // Glass Specular Highlight Pass
+                ctx.beginPath();
+                ctx.ellipse(-radius * 0.32, -radius * 0.38, Math.max(0.1, radius * 0.38), Math.max(0.1, radius * 0.16), -Math.PI / 4, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+                ctx.fill();
 
-                // Special Candy Stripes (Horizontal/Vertical)
-                if (tile.special === 'striped-h' || tile.special === 'striped-v') {
-                    this.ctx.strokeStyle = '#fff';
-                    this.ctx.lineWidth = 4;
-                    this.ctx.beginPath();
-                    if (tile.special === 'striped-h') {
-                        this.ctx.moveTo(cx - radius, cy);
-                        this.ctx.lineTo(cx + radius, cy);
-                    } else {
-                        this.ctx.moveTo(cx, cy - radius);
-                        this.ctx.lineTo(cx, cy + radius);
-                    }
-                    this.ctx.stroke();
-                }
+                // Secondary Rim Specular
+                ctx.beginPath();
+                ctx.arc(radius * 0.28, radius * 0.32, Math.max(0.1, radius * 0.2), 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+                ctx.fill();
 
-                this.ctx.restore();
-            }
-
-            drawStar(cx, cy, spikes, outerRadius, innerRadius) {
-                let rot = (Math.PI / 2) * 3;
-                let x = cx;
-                let y = cy;
-                const step = Math.PI / spikes;
-
-                this.ctx.beginPath();
-                this.ctx.moveTo(cx, cy - outerRadius);
-                for (let i = 0; i < spikes; i++) {
-                    x = cx + Math.cos(rot) * outerRadius;
-                    y = cy + Math.sin(rot) * outerRadius;
-                    this.ctx.lineTo(x, y);
-                    rot += step;
-
-                    x = cx + Math.cos(rot) * innerRadius;
-                    y = cy + Math.sin(rot) * innerRadius;
-                    this.ctx.lineTo(x, y);
-                    rot += step;
-                }
-                this.ctx.lineTo(cx, cy - outerRadius);
-                this.ctx.closePath();
+                ctx.restore();
             }
         }
 
-        // Initialize Game Instance on Load
+        /* Initialize Game on Window Load */
         window.onload = () => {
             window.game = new CandyBlastGame();
+
+            window.addEventListener('resize', () => {
+                if (window.game && window.game.canvas) {
+                    window.game.setupCanvas();
+                }
+            });
         };
     </script>
 </body>
