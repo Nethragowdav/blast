@@ -986,9 +986,84 @@
                 this.ctx.scale(dpr, dpr);
 
                 this.tileSize = rect.width / BOARD_SIZE;
-                this.canvas.onclick = (e) => this.onCanvasClick(e);
                 
+                // Remove old listeners and attach robust touch swipe & mouse drag controls
+                this.bindTouchControls();
+
                 this.startRenderLoop();
+            }
+
+            bindTouchControls() {
+                let startX = 0;
+                let startY = 0;
+                let dragTile = null;
+                let isDragging = false;
+
+                const getTileCoords = (clientX, clientY) => {
+                    const rect = this.canvas.getBoundingClientRect();
+                    const x = clientX - rect.left;
+                    const y = clientY - rect.top;
+                    const col = Math.floor(x / this.tileSize);
+                    const row = Math.floor(y / this.tileSize);
+                    if (col >= 0 && col < BOARD_SIZE && row >= 0 && row < BOARD_SIZE) {
+                        return { x: col, y: row };
+                    }
+                    return null;
+                };
+
+                this.canvas.onpointerdown = (e) => {
+                    if (this.isAnimating) return;
+                    const tile = getTileCoords(e.clientX, e.clientY);
+                    if (!tile) return;
+
+                    startX = e.clientX;
+                    startY = e.clientY;
+                    dragTile = tile;
+                    isDragging = true;
+
+                    if (this.board[tile.y]?.[tile.x]) {
+                        this.board[tile.y][tile.x].squishX = 1.35;
+                        this.board[tile.y][tile.x].squishY = 0.7;
+                    }
+                    if (navigator.vibrate) navigator.vibrate(15);
+                };
+
+                this.canvas.onpointermove = (e) => {
+                    if (!isDragging || !dragTile || this.isAnimating) return;
+                    const dx = e.clientX - startX;
+                    const dy = e.clientY - startY;
+                    const threshold = this.tileSize * 0.45;
+
+                    if (Math.abs(dx) > threshold || Math.abs(dy) > threshold) {
+                        let targetX = dragTile.x;
+                        let targetY = dragTile.y;
+
+                        if (Math.abs(dx) > Math.abs(dy)) {
+                            targetX += dx > 0 ? 1 : -1;
+                        } else {
+                            targetY += dy > 0 ? 1 : -1;
+                        }
+
+                        if (targetX >= 0 && targetX < BOARD_SIZE && targetY >= 0 && targetY < BOARD_SIZE) {
+                            isDragging = false;
+                            const targetTile = { x: targetX, y: targetY };
+                            this.trySwap(dragTile, targetTile);
+                        }
+                    }
+                };
+
+                this.canvas.onpointerup = (e) => {
+                    if (!isDragging || !dragTile || this.isAnimating) return;
+                    isDragging = false;
+                    const tile = getTileCoords(e.clientX, e.clientY);
+                    if (tile && tile.x === dragTile.x && tile.y === dragTile.y) {
+                        this.handleTileClick(tile);
+                    }
+                };
+
+                this.canvas.onpointercancel = () => {
+                    isDragging = false;
+                };
             }
 
             startRenderLoop() {
@@ -1099,6 +1174,7 @@
 
                 if (c1?.special === 'color-bomb' || c2?.special === 'color-bomb') {
                     sound.playSpecial();
+                    if (navigator.vibrate) navigator.vibrate([40, 60, 40]);
                     const bombTile = c1?.special === 'color-bomb' ? tile1 : tile2;
                     const targetCandy = c1?.special === 'color-bomb' ? c2 : c1;
 
@@ -1138,8 +1214,12 @@
                 if (matches.length > 0) {
                     this.movesLeft--;
                     this.updateUIHeader();
+                    if (navigator.vibrate) navigator.vibrate(25);
                     await this.processMatches();
                 } else {
+                    // Invalid move: shake board & revert
+                    if (navigator.vibrate) navigator.vibrate([30, 30, 30]);
+                    this.triggerBoardShake();
                     this.board[tile1.y][tile1.x] = c1;
                     this.board[tile2.y][tile2.x] = c2;
                     await new Promise(r => setTimeout(r, 160));
@@ -1147,6 +1227,13 @@
 
                 this.isAnimating = false;
                 this.checkGameStatus();
+            }
+
+            triggerBoardShake() {
+                const container = document.getElementById('board-container');
+                if (!container) return;
+                container.classList.add('animate-bounce');
+                setTimeout(() => container.classList.remove('animate-bounce'), 300);
             }
 
             findMatches() {
